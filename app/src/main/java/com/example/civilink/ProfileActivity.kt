@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.airbnb.lottie.LottieAnimationView
 import com.example.civilink.data.User
 import com.example.civilink.databinding.ActivityProfileBinding
@@ -31,6 +32,7 @@ class ProfileActivity : AppCompatActivity() {
     var database: FirebaseDatabase?=null
     var uid : String? = null
     var storage:FirebaseStorage?=null
+    private var dialog: Dialog? = null
     var selectedImage : Uri? = null
     private var profileImage :ImageView? = null
 
@@ -42,10 +44,6 @@ class ProfileActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
 
-        val dialog = ProgressDialog(this)
-        dialog.setMessage("Loading...")
-        dialog.setCancelable(false)
-
         database = FirebaseDatabase.getInstance()
         storage= FirebaseStorage.getInstance()
         auth=FirebaseAuth.getInstance()
@@ -53,7 +51,6 @@ class ProfileActivity : AppCompatActivity() {
         profileImage =binding!!.profileImage
 
         profileImage!!.setOnClickListener {
-
             val intent = Intent()
             intent.action = Intent.ACTION_GET_CONTENT
             intent.type = "image/*"
@@ -83,7 +80,7 @@ class ProfileActivity : AppCompatActivity() {
                                 .child("users")
                                 .child(uid!!)
                                 .setValue(user).addOnCompleteListener {
-                                    dialog.dismiss()
+                                    dialog!!.dismiss()
                                     startActivity(Intent(this, MainActivity::class.java))
                                     finish()
                                 }
@@ -102,7 +99,7 @@ class ProfileActivity : AppCompatActivity() {
             }
             if(selectedImage!=null&&name.isNotEmpty())
             {
-                dialog.show()
+                showCustomProgressDialog("Loading...")
             }
 
         }
@@ -166,23 +163,14 @@ class ProfileActivity : AppCompatActivity() {
         // Customize the layout elements
         val lottieAnimationView = customSeekBarView.findViewById<LottieAnimationView>(R.id.lottieAnimationView)
         val textViewMessage = customSeekBarView.findViewById<TextView>(R.id.textViewMessage)
-
-        // Set Lottie animation resource
         lottieAnimationView.setAnimation(animationResId) // Replace with your animation resource
         lottieAnimationView.playAnimation()
-
-        // Set the message
         textViewMessage.text = message
-
-        // Use a Dialog to display the custom SeekBar notification
         val customSeekBarDialog = Dialog(this)
         customSeekBarDialog.setContentView(customSeekBarView)
-
-        // Optional: Set dialog properties (e.g., background, dimensions, etc.)
         customSeekBarDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         customSeekBarDialog.window?.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        // Show the custom SeekBar notification
         customSeekBarDialog.show()
     }
 
@@ -204,5 +192,23 @@ class ProfileActivity : AppCompatActivity() {
         toast.duration = Toast.LENGTH_LONG
         toast.view = layout
         toast.show()
+    }
+
+    private fun showCustomProgressDialog(message: String) {
+        val inflater = LayoutInflater.from(this)
+        val customProgressDialogView = inflater.inflate(R.layout.custom_progress_dialog, null)
+
+        val lottieAnimationView = customProgressDialogView.findViewById<LottieAnimationView>(R.id.lottieAnimationView)
+        val textViewMessage = customProgressDialogView.findViewById<TextView>(R.id.textViewMessage)
+
+        textViewMessage.text = message
+
+        lottieAnimationView.setAnimation(R.raw.loading)
+        lottieAnimationView.playAnimation()
+
+        dialog = Dialog(this)
+        dialog!!.setContentView(customProgressDialogView)
+        dialog!!.setCancelable(false)
+        dialog!!.show()
     }
 }

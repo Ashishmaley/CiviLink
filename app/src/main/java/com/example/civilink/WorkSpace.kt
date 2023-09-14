@@ -3,6 +3,8 @@ package com.example.civilink
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.widget.EditText
@@ -20,10 +22,15 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 import java.io.IOException
@@ -37,23 +44,20 @@ class WorkSpace : AppCompatActivity(), OnMapReadyCallback {
     private val LOCATION_PERMISSION_REQUEST_CODE = 123
     private val REQUEST_IMAGE_CAPTURE = 1
     private lateinit var currentPhotoPath: String
+    private lateinit var googleMap: GoogleMap
+    private lateinit var database: DatabaseReference
     private lateinit var problemDescription: String
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_work_space)
-
-        // Initialize the MapView
         fireBaseAuth = FirebaseAuth.getInstance()
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        // Check and request necessary permissions
         requestPermissions()
-
         val editTextProblemDescription = findViewById<EditText>(R.id.editTextProblemDescription)
         val floatingSave = findViewById<LottieAnimationView>(R.id.floatingSave)
 
@@ -163,6 +167,8 @@ class WorkSpace : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
+        this.googleMap = googleMap
+
         val location = LatLng(0.0, 0.0)
         val cameraZoom = 12.0f
 
@@ -177,21 +183,9 @@ class WorkSpace : AppCompatActivity(), OnMapReadyCallback {
             return
         }
         googleMap.isMyLocationEnabled = true
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { locationResult ->
-                if (locationResult != null) {
-                    val userLocation = LatLng(locationResult.latitude, locationResult.longitude)
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, cameraZoom))
-                    googleMap.addMarker(
-                        MarkerOptions()
-                            .position(userLocation)
-                            .title("My Location")
-                            .snippet("This is your current location")
-                    )
-                } else {
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, cameraZoom))
-                }
-            }
+        if (isLocationPermissionGranted()) {
+            fetchLocationDataFromFirebase(googleMap)
+        }
     }
 
     private fun uploadPhotoToFirebase(photoFile: File, onPhotoUploaded: (String) -> Unit) {
@@ -219,8 +213,6 @@ class WorkSpace : AppCompatActivity(), OnMapReadyCallback {
                 if (location != null) {
                     val database = FirebaseDatabase.getInstance()
                     val userReportsRef = database.getReference("user_reports")
-
-                    // Create a new child node under the user's UID
                     val newReportRef = userReportsRef.child(userId).push()
 
                     val reportData = ReportData(
@@ -244,6 +236,53 @@ class WorkSpace : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
+    private fun isLocationPermissionGranted(): Boolean {
+        val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
+        val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
+
+        return (ContextCompat.checkSelfPermission(this, fineLocationPermission)
+                == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(
+            this,
+            coarseLocationPermission
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun fetchLocationDataFromFirebase(gMap: GoogleMap) {
+        val database = FirebaseDatabase.getInstance()
+        val customMarkerBitmap = BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
+        val desiredWidth = 120 // Adjust to your desired width
+        val desiredHeight = 120 // Adjust to your desired height
+        val originalMarkerBitmap = BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
+        val resizedMarkerBitmap = Bitmap.createScaledBitmap(originalMarkerBitmap, desiredWidth, desiredHeight, false)
+        val customMarker = BitmapDescriptorFactory.fromBitmap(resizedMarkerBitmap)
+        val userReportsRef = database.getReference("user_reports")
+
+        userReportsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (userSnapshot in dataSnapshot.children) {
+                    for (reportSnapshot in userSnapshot.children) {
+                        val reportData = reportSnapshot.getValue(ReportData::class.java)
+                        reportData?.let { data ->
+                            val location = LatLng(data.latitude, data.longitude)
+                            val markerOptions = MarkerOptions()
+                                .position(location)
+                                .title("User Report")
+                                .snippet(data.problemDescription)
+                                .icon(customMarker)
+                            gMap.addMarker(markerOptions)
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle database errors if needed
+            }
+        })
+    }
+
+
 
 
     override fun onResume() {

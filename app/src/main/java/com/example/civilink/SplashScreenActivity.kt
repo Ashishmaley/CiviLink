@@ -35,7 +35,6 @@ class SplashScreenActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
         storage = FirebaseStorage.getInstance()
 
-        // Load the fade-in animation from XML
         fadeInAnimation = AnimationUtils.loadAnimation(this, R.anim.splash_anim)
 
         val splashScreenView = findViewById<ImageView>(R.id.splashImage)
@@ -77,7 +76,8 @@ class SplashScreenActivity : AppCompatActivity() {
                     finish()
                 }
             }, 4000) // 2 seconds delay
-        } else {
+        }
+        else {
             // No internet connection, show a toast message or take appropriate action
             showCustomLottieToast(R.raw.networkerror, "No Internet Connection")
         }

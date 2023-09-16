@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.civilink.databinding.FragmentImageDisplayBinding
 import com.squareup.picasso.Picasso
-
+//ashishmaley
 class ImageDisplayFragment : Fragment() {
     private lateinit var binding: FragmentImageDisplayBinding
 

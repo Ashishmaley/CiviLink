@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/capturedtoproblem"
+    app:startDestination="@id/imageDisplayFragment">
+    <action
+        android:id="@+id/action_viewPagerFragment_to_imageDisplayFragment"
+        app:destination="@id/imageDisplayFragment" />
+    <fragment
+        android:id="@+id/imageDisplayFragment"
+        android:name="com.example.civilink.ImageDisplayFragment"
+        android:label="fragment_image_display"
+        tools:layout="@layout/fragment_image_display" >
+        <action
+            android:id="@+id/action_imageDisplayFragment_to_problemStatmentFragment"
+            app:destination="@id/problemStatmentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/problemStatmentFragment"
+        android:name="com.example.civilink.ProblemStatmentFragment"
+        android:label="fragment_problem_statment"
+        tools:layout="@layout/fragment_problem_statment" />
+</navigation>

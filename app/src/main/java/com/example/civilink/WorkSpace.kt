@@ -283,8 +283,6 @@ class WorkSpace : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-
-
     override fun onResume() {
         super.onResume()
         mapView.onResume()

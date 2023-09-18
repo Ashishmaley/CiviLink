@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.lottie.LottieAnimationView
+import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
@@ -53,7 +54,7 @@ class SplashScreenActivity : AppCompatActivity() {
                             override fun onDataChange(dataSnapshot: DataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     if (dataSnapshot.child("uid").exists() && dataSnapshot.child("name").exists()) {
-                                        startActivity(Intent(this@SplashScreenActivity, WorkSpace::class.java))
+                                        startActivity(Intent(this@SplashScreenActivity, MainViewPager::class.java))
                                         this@SplashScreenActivity.finish()
                                     } else {
                                         startActivity(Intent(this@SplashScreenActivity, MainActivity::class.java))

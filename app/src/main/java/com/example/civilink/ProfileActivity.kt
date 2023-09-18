@@ -2,7 +2,6 @@
 package com.example.civilink
 
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,10 +11,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.airbnb.lottie.LottieAnimationView
 import com.example.civilink.data.User
 import com.example.civilink.databinding.ActivityProfileBinding
+import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -85,8 +84,11 @@ class ProfileActivity : AppCompatActivity() {
                                     finish()
                                 }
                         }
-                    }else
-                    showCustomSeekBarNotification(R.raw.networkerror,"Internet error")
+                    }
+                    else
+                    {
+                        showCustomSeekBarNotification(R.raw.networkerror,"Internet error")
+                    }
                 }
             }
             else {
@@ -137,8 +139,8 @@ class ProfileActivity : AppCompatActivity() {
                         if (dataSnapshot.exists()) {
                             // User's profile data exists, check if it contains all necessary fields
                             if (dataSnapshot.child("uid").exists() && dataSnapshot.child("name").exists()) {
-                                // User's profile data is complete, navigate to main activity
-                                startActivity(Intent(this@ProfileActivity, WorkSpace::class.java))
+                                showCustomSeekBarNotification(R.raw.donelottie,"User profile Found,Redirecting...")
+                                startActivity(Intent(this@ProfileActivity, MainViewPager::class.java))
                                 finish()
                             }
                         }
@@ -189,7 +191,7 @@ class ProfileActivity : AppCompatActivity() {
         textViewMessage.text = message
 
         val toast = Toast(this)
-        toast.duration = Toast.LENGTH_LONG
+        toast.duration = Toast.LENGTH_SHORT
         toast.view = layout
         toast.show()
     }

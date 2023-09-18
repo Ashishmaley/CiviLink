@@ -15,9 +15,12 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.airbnb.lottie.LottieAnimationView
+import com.example.civilink.data.ImageViewModel
+import com.example.civilink.MyBottomSheetFragment
 import com.example.civilink.R
-import com.example.civilink.ReportData
+import com.example.civilink.data.ReportData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -39,6 +42,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mapToggleImageView: ImageView
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -89,7 +93,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 return
             }
             googleMap.isMyLocationEnabled = true
-            // Initialize FusedLocationProviderClient
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
@@ -125,16 +128,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         ) == PackageManager.PERMISSION_GRANTED)
     }
 
-    private fun fetchLocationDataFromFirebase(gMap: GoogleMap) {
+   private fun fetchLocationDataFromFirebase(gMap: GoogleMap) {
         val database = FirebaseDatabase.getInstance()
-        val desiredWidth = 120 // Adjust to your desired width
-        val desiredHeight = 120 // Adjust to your desired height
+        val desiredWidth = 120
+        val desiredHeight = 120
         val originalMarkerBitmap =
             BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
         val resizedMarkerBitmap =
             Bitmap.createScaledBitmap(originalMarkerBitmap, desiredWidth, desiredHeight, false)
         val customMarker = BitmapDescriptorFactory.fromBitmap(resizedMarkerBitmap)
         val userReportsRef = database.getReference("user_reports")
+        val viewModel: ImageViewModel by activityViewModels()
 
         userReportsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -148,7 +152,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 .title("User Report")
                                 .snippet(data.problemDescription)
                                 .icon(customMarker)
-                            gMap.addMarker(markerOptions)
+                            val tag = "${data.userId}|${data.problemDescription}|${data.photoUrl}"
+                            googleMap.addMarker(markerOptions)?.tag = tag
                         }
                     }
                 }
@@ -158,7 +163,36 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 // Handle database errors if needed
             }
         })
+
+        // Set a marker click listener to show the image in a bottom sheet
+        googleMap.setOnMarkerClickListener { marker ->
+            val tag = marker.tag as String?
+            Log.d("map", "$tag")
+
+            if (tag != null) {
+                // Split the tag using the pipe character '|' to retrieve user email, problem description, and photo URL
+                val tagParts = tag.split("|")
+                if (tagParts.size == 3) {
+                    val userEmail = tagParts[0]
+                    val problemDescription = tagParts[1]
+                    val imageUrl = tagParts[2]
+
+                    // Now you have userEmail, problemDescription, and imageUrl
+                    viewModel.selectedImageUrl = imageUrl
+                    viewModel.userEmail = userEmail
+                    viewModel.problemDescription = problemDescription
+
+                    val bottomSheetFragment = MyBottomSheetFragment()
+                    bottomSheetFragment.showCustom(childFragmentManager, imageUrl)
+                    Log.d("bundle", "$imageUrl")
+                }
+            }
+
+            true
+        }
     }
+
+
 
     override fun onResume() {
         super.onResume()
@@ -204,4 +238,3 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         toast.show()
     }
 }
-

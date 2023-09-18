@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:background="#A1E0A7"
     android:layout_height="match_parent"
-    tools:context=".WorkSpace">
+    tools:context=".main_viewpager_fragments.MainViewPager">
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"

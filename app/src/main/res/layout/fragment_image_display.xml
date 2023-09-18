@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ImageDisplayFragment">
+    tools:context=".image_and_problem.ImageDisplayFragment">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -13,12 +13,37 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
+            android:background="@color/clr_bg"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="1.0" />
+
+        <TextView
+            android:id="@+id/latitudeTextView"
+            android:layout_width="107dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/cardView"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="15dp"
+            android:text="Latitude: "
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/longitudeTextView"
+            android:layout_width="107dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/cardView"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="34dp"
+            android:layout_marginBottom="15dp"
+            android:text="Longitude: "
+            android:textSize="16sp" />
+
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
             android:layout_width="match_parent"
@@ -31,16 +56,19 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" >
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:weightSum="2"
                 android:layout_height="match_parent">
+
             <Button
                 android:id="@+id/discard"
                 android:layout_width="wrap_content"
                 android:textColor="@color/black"
                 android:layout_gravity="left"
                 android:layout_weight="1"
+                android:onClick="BackButton"
                 android:layout_margin="5dp"
                 android:layout_marginStart="5dp"
                 android:layout_marginTop="15dp"
@@ -48,9 +76,11 @@
                 android:text="Discard"
                 />
             <Button
+                android:id="@+id/problemDescription"
                 android:layout_width="wrap_content"
                 android:textColor="@color/black"
                 android:layout_weight="1"
+                android:onClick="navigateToProblem"
                 android:layout_margin="5dp"
                 android:layout_gravity="right"
                 android:layout_marginEnd="5dp"

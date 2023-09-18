@@ -6,15 +6,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
+import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.example.civilink.ProfileActivity
 import com.example.civilink.R
-import com.example.civilink.WorkSpace
 import com.example.civilink.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -171,7 +170,7 @@ class LoginFragment : Fragment() {
                                 R.raw.welcome, // Change to your desired icon
                                 "Welcome back...",
                             )
-                            val intent = Intent(requireActivity(), WorkSpace::class.java)
+                            val intent = Intent(requireActivity(), MainViewPager::class.java)
                             startActivity(intent)
                             requireActivity().finish()
                         } else {

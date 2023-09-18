@@ -1,4 +1,4 @@
-package com.example.civilink
+package com.example.civilink.data
 data class ReportData(
     val userId: String?,
     val latitude: Double,

@@ -1,9 +1,7 @@
 package com.example.civilink.SLF
 
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Intent
-import android.media.Image
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,10 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
-import com.example.civilink.MainActivity
+import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.example.civilink.ProfileActivity
 import com.example.civilink.R
-import com.example.civilink.WorkSpace
 import com.example.civilink.data.User
 import com.example.civilink.databinding.FragmentSignUpBinding
 import com.google.android.gms.auth.api.Auth
@@ -194,10 +191,7 @@ class SignUpFragment : Fragment() {
                                                     if (dbTask.isSuccessful) {
                                                         dialog!!.dismiss()
                                                         startActivity(
-                                                            Intent(
-                                                                requireContext(),
-                                                                MainActivity::class.java
-                                                            )
+                                                            Intent(requireActivity(), MainViewPager::class.java)
                                                         )
                                                         requireActivity().finish()
                                                     } else {
@@ -303,7 +297,7 @@ class SignUpFragment : Fragment() {
                             override fun onDataChange(dataSnapshot: DataSnapshot) {
                                 if (dataSnapshot.exists()) {
                                     if (dataSnapshot.child("uid").exists() && dataSnapshot.child("name").exists()) {
-                                        startActivity(Intent(requireContext(), WorkSpace::class.java))
+                                        startActivity(Intent(requireContext(), MainViewPager::class.java))
                                         requireActivity().finish()
                                     } else {
                                         startActivity(Intent(requireContext(), ProfileActivity::class.java))

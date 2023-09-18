@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+    <TextView
+        android:id="@+id/useId"
+        android:textSize="20dp"
+        android:hint="Name"
+        android:background="@drawable/map_otp_box_for_toast"
+        android:padding="16dp"
+        android:textStyle="bold"
+        android:fontFamily="@font/advent_pro_medium"
+        android:textColor="@color/white"
+        android:layout_margin="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+    <TextView
+        android:textColor="@color/white"
+        android:layout_margin="10dp"
+        android:fontFamily="@font/advent_pro_medium"
+        android:hint="@string/profile_information"
+        android:background="@drawable/map_otp_box_for_toast"
+
+        android:id="@+id/problem"
+        android:layout_width="wrap_content"
+        android:padding="16dp"
+        android:layout_height="wrap_content"
+        />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:adjustViewBounds="true"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/camera"
+            android:focusable="true" />
+    </LinearLayout>

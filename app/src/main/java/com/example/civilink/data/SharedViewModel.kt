@@ -1,16 +1,26 @@
 package com.example.civilink.data
-import androidx.lifecycle.LiveData
+
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class SharedViewModel : ViewModel() {
-    private val _photoUri = MutableLiveData<String>()
-    val photoUri: LiveData<String> get() = _photoUri
+    val imageUri = MutableLiveData<String>()
+    val latitude = MutableLiveData<Double>()
+    val longitude = MutableLiveData<Double>()
 
-    fun setPhotoUri(uri: String) {
-        _photoUri.value = uri
+    fun setImageUri(uri: String) {
+        imageUri.value = uri
+    }
+
+    fun setLatitude(lat: Double) {
+        latitude.value = lat
+    }
+
+    fun setLongitude(long: Double) {
+        longitude.value = long
     }
 }
+
 
 
 

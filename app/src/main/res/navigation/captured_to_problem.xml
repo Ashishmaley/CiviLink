@@ -4,12 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/capturedtoproblem"
     app:startDestination="@id/imageDisplayFragment">
-    <action
-        android:id="@+id/action_viewPagerFragment_to_imageDisplayFragment"
-        app:destination="@id/imageDisplayFragment" />
     <fragment
         android:id="@+id/imageDisplayFragment"
-        android:name="com.example.civilink.ImageDisplayFragment"
+        android:name="com.example.civilink.image_and_problem.ImageDisplayFragment"
         android:label="fragment_image_display"
         tools:layout="@layout/fragment_image_display" >
         <action
@@ -18,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/problemStatmentFragment"
-        android:name="com.example.civilink.ProblemStatmentFragment"
+        android:name="com.example.civilink.image_and_problem.ProblemStatmentFragment"
         android:label="fragment_problem_statment"
         tools:layout="@layout/fragment_problem_statment" />
 </navigation>

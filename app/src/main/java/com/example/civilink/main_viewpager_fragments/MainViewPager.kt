@@ -1,11 +1,13 @@
 package com.example.civilink.main_viewpager_fragments
 
+import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.civilink.R
+import com.example.civilink.UserProfile.UserProfileEdit
 import com.example.civilink.adapters.MyPagerAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -17,8 +19,6 @@ class MainViewPager : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setStatusBarColor(R.color.status_bar_color)
         setContentView(R.layout.activity_main_viewpager)
-        val userImg = findViewById<ImageView>(R.id.userProfile)
-
         val viewPager: ViewPager2 = findViewById(R.id.view_pager)
         val tabLayout: TabLayout = findViewById(R.id.tabs)
         val fragments = listOf(
@@ -46,6 +46,12 @@ class MainViewPager : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.setIcon(tabIcons[position])
         }.attach()
+        val userProfileImageView = findViewById<ImageView>(R.id.userProfile)
+        userProfileImageView.setOnClickListener {
+            val intent = Intent(this,UserProfileEdit::class.java)
+            startActivity(intent)
+        }
+
     }
     private fun setStatusBarColor(colorResId: Int) {
         // Check if the device has a transparent status bar
@@ -53,4 +59,6 @@ class MainViewPager : AppCompatActivity() {
             window.statusBarColor = resources.getColor(colorResId, theme)
         }
     }
+
+
 }

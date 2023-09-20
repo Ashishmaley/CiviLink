@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.example.civilink.databinding.FragmentImageDisplayBinding
 import com.squareup.picasso.Picasso
 import androidx.lifecycle.ViewModelProvider
-import com.example.civilink.data.SharedViewModel
+import com.example.civilink.data.models.SharedViewModel
 //ashishmaley
 
 class ImageDisplayFragment : Fragment() {

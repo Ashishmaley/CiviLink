@@ -31,7 +31,6 @@ class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_spalsh_screen)
-
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
         storage = FirebaseStorage.getInstance()

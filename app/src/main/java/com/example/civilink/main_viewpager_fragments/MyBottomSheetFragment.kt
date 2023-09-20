@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.squareup.picasso.Picasso
 import android.location.Geocoder
 import android.widget.Button
+import androidx.cardview.widget.CardView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -25,6 +26,7 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var imageViewModel: ImageViewModel
     private var reportId: String? = null
     private lateinit var deleteButton: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         imageViewModel = ViewModelProvider(requireActivity()).get(ImageViewModel::class.java)
@@ -77,10 +79,14 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
             val behavior = BottomSheetBehavior.from(bottomSheet)
             val customPeekHeight = resources.getDimensionPixelSize(R.dimen.peek_height) // Adjust this value as needed
             behavior.peekHeight = customPeekHeight
-            behavior.isDraggable
-            behavior.isHideable
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
+        val commentButton = view.findViewById<CardView>(R.id.commentButton)
+        commentButton.setOnClickListener {
+            val commentsBottomSheetFragment = CommentsBottomSheetFragment()
+            commentsBottomSheetFragment.show(childFragmentManager, commentsBottomSheetFragment.tag)
+        }
+
     }
     private fun onDeleteButtonClick() {
         val reportId = imageViewModel.reportId

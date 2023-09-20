@@ -253,9 +253,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 val markerOptions = createMarkerOptions(marker.position, markerData)
 
                 // Adjust marker visibility based on zoom level
-                if (zoomLevel < 10 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)) {
+                if (zoomLevel < 10 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)) {
                     marker.isVisible = true
-                } else if (zoomLevel < 15 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)) {
+                } else if (zoomLevel < 15 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)) {
                     marker.isVisible = true
                 } else marker.isVisible = markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
             }

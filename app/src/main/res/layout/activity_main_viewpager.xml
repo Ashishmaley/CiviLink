@@ -18,8 +18,8 @@
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:id="@+id/userProfile"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="10dp"
         android:src="@drawable/user"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -1,6 +1,7 @@
 package com.example.civilink.main_viewpager_fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -17,8 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.airbnb.lottie.LottieAnimationView
-import com.example.civilink.data.ImageViewModel
-import com.example.civilink.MyBottomSheetFragment
+import com.example.civilink.data.models.ImageViewModel
 import com.example.civilink.R
 import com.example.civilink.data.ReportData
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -29,7 +29,9 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -42,6 +44,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mapToggleImageView: ImageView
+    private val markers = mutableListOf<Marker>()
+    private lateinit var childEventListener: ChildEventListener
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,7 +85,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
-
         if (isLocationPermissionGranted()) {
             if (ActivityCompat.checkSelfPermission(
                     requireContext(),
@@ -112,15 +116,41 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     mapToggleImageView.setImageResource(R.drawable.satelliteoff) // Set the Normal image
                 }
             }
-
-            fetchLocationDataFromFirebase(googleMap)
+            googleMap.setOnCameraIdleListener {
+                updateMarkersBasedOnZoomLevel()
+                setupDatabaseListener()
+            }
+            setupDatabaseListener()
         }
+    }
+    private fun setupDatabaseListener() {
+        childEventListener = object : ChildEventListener {
+            override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
+                fetchLocationDataFromFirebase(googleMap)
+            }
+
+            override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {
+                fetchLocationDataFromFirebase(googleMap)
+            }
+
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+                fetchLocationDataFromFirebase(googleMap)
+            }
+
+            override fun onChildMoved(dataSnapshot: DataSnapshot, previousChildName: String?) {
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+            }
+        }
+        val userReportsRef = FirebaseDatabase.getInstance().getReference("user_reports")
+        userReportsRef.addChildEventListener(childEventListener)
     }
 
     private fun isLocationPermissionGranted(): Boolean {
+
         val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
         val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
-
         return (ContextCompat.checkSelfPermission(requireContext(), fineLocationPermission)
                 == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(
             requireContext(),
@@ -128,7 +158,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         ) == PackageManager.PERMISSION_GRANTED)
     }
 
-   private fun fetchLocationDataFromFirebase(gMap: GoogleMap) {
+    @SuppressLint("PotentialBehaviorOverride")
+    private fun fetchLocationDataFromFirebase(gMap: GoogleMap) {
         val database = FirebaseDatabase.getInstance()
         val desiredWidth = 120
         val desiredHeight = 120
@@ -142,48 +173,52 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         userReportsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
+                markers.clear() // Clear existing markers
                 for (userSnapshot in dataSnapshot.children) {
                     for (reportSnapshot in userSnapshot.children) {
                         val reportData = reportSnapshot.getValue(ReportData::class.java)
                         reportData?.let { data ->
                             val location = LatLng(data.latitude, data.longitude)
-                            val markerOptions = MarkerOptions()
-                                .position(location)
-                                .title("User Report")
-                                .snippet(data.problemDescription)
-                                .icon(customMarker)
-                            val tag = "${data.userId}|${data.problemDescription}|${data.photoUrl}"
-                            googleMap.addMarker(markerOptions)?.tag = tag
+                            // Create marker options based on zoom level
+                            val markerOptions = createMarkerOptions(location, data)
+                            val tag = "${data.userId}|${data.problemDescription}|${data.photoUrl}|${data.latitude}|${data.longitude}|${reportSnapshot.key}"
+                            val marker = googleMap.addMarker(markerOptions)
+                            marker?.let { markers.add(it) }
+                            marker!!.tag = tag
                         }
                     }
                 }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                // Handle database errors if needed
+                showCustomLottieToast(R.raw.networkerror, "Check Internet connection")
             }
         })
 
-        // Set a marker click listener to show the image in a bottom sheet
         googleMap.setOnMarkerClickListener { marker ->
             val tag = marker.tag as String?
             Log.d("map", "$tag")
 
             if (tag != null) {
-                // Split the tag using the pipe character '|' to retrieve user email, problem description, and photo URL
                 val tagParts = tag.split("|")
-                if (tagParts.size == 3) {
-                    val userEmail = tagParts[0]
+                if (tagParts.size == 6) {
+                    val userId = tagParts[0]
                     val problemDescription = tagParts[1]
                     val imageUrl = tagParts[2]
+                    val latitude = tagParts[3].toDoubleOrNull()
+                    val longitude = tagParts[4].toDoubleOrNull()
+                    val reportId = tagParts[5]
 
-                    // Now you have userEmail, problemDescription, and imageUrl
                     viewModel.selectedImageUrl = imageUrl
-                    viewModel.userEmail = userEmail
+                    viewModel.userEmail = userId
                     viewModel.problemDescription = problemDescription
-
+                    viewModel.latitude = latitude
+                    viewModel.longitude = longitude
+                    viewModel.reportId = reportId // Store the report ID
+                    val cameraUpdate = CameraUpdateFactory.newLatLngZoom(marker.position, 15.0f)
+                    googleMap.animateCamera(cameraUpdate)
                     val bottomSheetFragment = MyBottomSheetFragment()
-                    bottomSheetFragment.showCustom(childFragmentManager, imageUrl)
+                    bottomSheetFragment.show(childFragmentManager, imageUrl)
                     Log.d("bundle", "$imageUrl")
                 }
             }
@@ -192,11 +227,52 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private fun createMarkerOptions(location: LatLng, data: ReportData): MarkerOptions {
+        // Create different marker icons based on zoom level
+        val zoomLevel = googleMap.cameraPosition.zoom
+        val icon = when {
+            zoomLevel < 10 -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+            zoomLevel < 12 -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+            else -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+        }
+
+        return MarkerOptions()
+            .position(location)
+            .title("User Report")
+            .snippet(data.problemDescription)
+            .icon(icon)
+    }
+
+    private fun updateMarkersBasedOnZoomLevel() {
+        val zoomLevel = googleMap.cameraPosition.zoom
+
+        for (marker in markers) {
+            val tag = marker.tag
+            if (tag is ReportData) { // Check if the tag is of type ReportData
+                val markerData = tag as ReportData
+                val markerOptions = createMarkerOptions(marker.position, markerData)
+
+                // Adjust marker visibility based on zoom level
+                if (zoomLevel < 10 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)) {
+                    marker.isVisible = true
+                } else if (zoomLevel < 15 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)) {
+                    marker.isVisible = true
+                } else marker.isVisible = markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+            }
+        }
+    }
+
+
 
 
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+        // Check if googleMap is initialized
+        if (this::googleMap.isInitialized) {
+            googleMap.clear() // Clear existing markers
+            fetchLocationDataFromFirebase(googleMap)
+        }
     }
 
     override fun onPause() {

@@ -1,4 +1,4 @@
-package com.example.civilink.data
+package com.example.civilink.data.models
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

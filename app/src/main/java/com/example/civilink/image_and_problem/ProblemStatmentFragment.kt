@@ -15,12 +15,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.airbnb.lottie.LottieAnimationView
 import com.example.civilink.R
 import com.example.civilink.data.ReportData
-import com.example.civilink.data.SharedViewModel
+import com.example.civilink.data.models.SharedViewModel
 import com.example.civilink.databinding.FragmentProblemStatmentBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
-
+import com.google.firebase.storage.StorageReference
+import java.util.*
 
 class ProblemStatmentFragment : Fragment() {
     private var _binding: FragmentProblemStatmentBinding? = null
@@ -73,9 +74,14 @@ class ProblemStatmentFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
     private fun uploadPhotoToFirebase(photoUri: String, onPhotoUploaded: (String) -> Unit) {
         val storageRef = FirebaseStorage.getInstance().reference
-        val photoRef = storageRef.child("photos/${System.currentTimeMillis()}.jpg") // You can customize the file name here if needed
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val reportId = UUID.randomUUID().toString()
+
+        val uniquePhotoId = "${userId}_${reportId}_${System.currentTimeMillis()}.jpg" // Unique photo ID
+        val photoRef = storageRef.child("photos/$uniquePhotoId")
 
         val uploadTask = photoRef.putFile(Uri.parse(photoUri))
 
@@ -88,7 +94,6 @@ class ProblemStatmentFragment : Fragment() {
             Toast.makeText(requireContext(), "Failed to upload photo", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     @RequiresApi(34)
     private fun saveDataToFirebase(
@@ -115,9 +120,9 @@ class ProblemStatmentFragment : Fragment() {
 
             newReportRef.setValue(reportData)
                 .addOnSuccessListener {
-                            dialog?.dismiss()
-                            showCustomLottieToast(R.raw.donelottie, "Report saved successfully")
-                    parentFragmentManager.popBackStack()
+                    dialog?.dismiss()
+                    showCustomLottieToast(R.raw.donelottie, "Report saved successfully")
+                    requireActivity().finish()
                 }
                 .addOnFailureListener {
                     dialog?.dismiss()
@@ -125,6 +130,7 @@ class ProblemStatmentFragment : Fragment() {
                 }
         }
     }
+
     private fun showCustomProgressDialog(message: String) {
         val inflater = LayoutInflater.from(requireContext())
         val customProgressDialogView = inflater.inflate(R.layout.custom_progress_dialog, null)
@@ -142,12 +148,13 @@ class ProblemStatmentFragment : Fragment() {
         dialog!!.setCancelable(false)
         dialog!!.show()
     }
+
     private fun showCustomLottieToast(animationResId: Int, message: String) {
         val inflater = layoutInflater
         val layout = inflater.inflate(R.layout.custom_toast_lottie_layout, null)
         val lottieAnimationView = layout.findViewById<LottieAnimationView>(R.id.lottieAnimationView)
         val textViewMessage = layout.findViewById<TextView>(R.id.textViewMessage)
-        textViewMessage.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+        textViewMessage.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         lottieAnimationView.setAnimation(animationResId)
         lottieAnimationView.playAnimation()
         textViewMessage.text = message

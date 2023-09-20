@@ -2,7 +2,9 @@
 package com.example.civilink
 
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -34,6 +36,8 @@ class ProfileActivity : AppCompatActivity() {
     private var dialog: Dialog? = null
     var selectedImage : Uri? = null
     private var profileImage :ImageView? = null
+    private lateinit var sharedPreferences: SharedPreferences
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -42,7 +46,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(binding!!.root)
 
         supportActionBar?.hide()
-
+        sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
         database = FirebaseDatabase.getInstance()
         storage= FirebaseStorage.getInstance()
         auth=FirebaseAuth.getInstance()
@@ -74,6 +78,12 @@ class ProfileActivity : AppCompatActivity() {
                             val userName = binding!!.name.text.toString()
                             val email = auth!!.currentUser!!.email
                             val user = User(uid, userName, imageUri, email)
+                            val editor = sharedPreferences.edit()
+                            editor.putString("userId", uid)
+                            editor.putString("userName", userName)
+                            editor.putString("userEmail", email)
+                            editor.putString("userPhotoUrl", imageUri)
+                            editor.apply()
 
                             database!!.reference
                                 .child("users")

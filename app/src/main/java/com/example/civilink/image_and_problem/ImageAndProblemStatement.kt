@@ -7,7 +7,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.civilink.databinding.ActivityImageAndProblemStatementBinding
 import androidx.lifecycle.ViewModelProvider
 import com.example.civilink.R
-import com.example.civilink.data.SharedViewModel
+import com.example.civilink.data.models.SharedViewModel
 
 @Suppress("DEPRECATION")
 class ImageAndProblemStatement : AppCompatActivity() {
@@ -15,7 +15,6 @@ class ImageAndProblemStatement : AppCompatActivity() {
     private lateinit var binding: ActivityImageAndProblemStatementBinding
     private lateinit var navController: NavController
     private lateinit var sharedViewModel: SharedViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityImageAndProblemStatementBinding.inflate(layoutInflater)
@@ -25,8 +24,6 @@ class ImageAndProblemStatement : AppCompatActivity() {
 
         navController = navHostFragment.navController
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-
-        // Get the data from the intent
         val data = intent.getStringExtra("key")
         val latitude = intent.getDoubleExtra("latitude", 0.0)
         val longitude = intent.getDoubleExtra("longitude", 0.0)

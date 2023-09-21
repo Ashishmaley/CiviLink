@@ -18,8 +18,14 @@ import android.location.Geocoder
 import android.widget.Button
 import androidx.cardview.widget.CardView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MyBottomSheetFragment : BottomSheetDialogFragment() {
     private var userId : String? = null
@@ -41,29 +47,66 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         val imageViewModel: ImageViewModel by activityViewModels()
         val imageView = view.findViewById<ImageView>(R.id.imageView)
         deleteButton = view.findViewById(R.id.deleteButton)
-        var userEmail = view.findViewById<TextView>(R.id.useId)
-        var problemDescription = view.findViewById<TextView>(R.id.problem)
+        val address = view.findViewById<TextView>(R.id.useId)
+        val problemDescription = view.findViewById<TextView>(R.id.problem)
+        var ptitle = view.findViewById<TextView>(R.id.pTitle)
+        var like = view.findViewById<TextView>(R.id.like)
+        var time = view.findViewById<TextView>(R.id.timeAndDate)
+
+        ptitle.text = imageViewModel.spinnerSelectedItem
+        like.text = imageViewModel.intValue.toString()
+
+        val timestamp = imageViewModel.timestamp // Assuming it's in seconds
+        val timestampMillis = timestamp?.times(1000L) // Convert to milliseconds
+        val date = timestampMillis?.let { Date(it) }
+        time.text = date.toString()
+
         reportId = imageViewModel.reportId
         userId = imageViewModel.userEmail
+        getUserEmail(userId.toString())
+
         val imageUrl = imageViewModel.selectedImageUrl
-        if (imageUrl != null) {
+
+        if (imageUrl != null && imageUrl.isNotEmpty()) {
             Log.d("bottomUP", "$imageUrl")
             val latitude = imageViewModel.latitude ?: 0.0
             val longitude = imageViewModel.longitude ?: 0.0
-            userEmail.text = getAddressFromLocation(latitude, longitude)
+            address.text = getAddressFromLocation(latitude, longitude)
             problemDescription.text = imageViewModel.problemDescription
             Picasso.get()
                 .load(imageUrl)
                 .into(imageView)
         }
+
         setupDeleteButton()
         return view
     }
+
     private fun setupDeleteButton() {
         deleteButton.setOnClickListener {
             onDeleteButtonClick()
         }
     }
+    private fun getUserEmail(userId: String) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId)
+
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val userEmail = snapshot.child("emailId").getValue(String::class.java)
+                    if (!userEmail.isNullOrEmpty()) {
+                        val uEmail = view?.findViewById<TextView>(R.id.uEmail)
+                        uEmail?.text = userEmail
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle any errors here
+            }
+        })
+    }
+
     private fun getAddressFromLocation(latitude: Double, longitude: Double): String {
         val geocoder = Geocoder(requireContext())
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)

@@ -32,22 +32,24 @@
         tools:targetApi="31">
         <activity
             android:name=".MyApplication"
+            android:configChanges="orientation|screenSize"
             android:exported="false" />
         <activity
             android:name=".UserProfile.UserProfileEdit"
             android:exported="false"
-            android:screenOrientation="fullSensor" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".image_and_problem.ImageAndProblemStatement"
             android:exported="false"
-            android:screenOrientation="fullSensor" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".main_viewpager_fragments.MainViewPager"
+            android:configChanges="orientation|screenSize"
             android:exported="false" />
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true"
-            android:screenOrientation="fullSensor">
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -57,11 +59,11 @@
         <activity
             android:name=".ProfileActivity"
             android:exported="false"
-            android:screenOrientation="fullSensor" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:screenOrientation="fullSensor" />
+            android:configChanges="orientation|screenSize" />
 
         <meta-data
             android:name="preloaded_fonts"

@@ -3,9 +3,14 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.civilink" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/white</item>
-        <item name="colorPrimaryDark">#EBF7F8FC</item>
-        <item name="colorAccent">#EBF9F9FB</item>
+        <item name="colorPrimaryDark">#EBFAFAFB</item>
+        <item name="colorAccent">#EBF0F0F4</item>
     </style>
 
     <style name="Theme.civilink" parent="Base.Theme.civilink" />
+    <style name="CustomSpinnerDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@drawable/combo_bg</item>
+        <item name="android:textColor">@color/white</item> <!-- Customize text color -->
+        <!-- Add more attributes to customize the dialog -->
+    </style>
 </resources>

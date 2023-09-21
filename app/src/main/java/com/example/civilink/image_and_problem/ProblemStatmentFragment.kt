@@ -7,6 +7,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -19,6 +21,7 @@ import com.example.civilink.data.models.SharedViewModel
 import com.example.civilink.databinding.FragmentProblemStatmentBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.util.*
@@ -56,13 +59,31 @@ class ProblemStatmentFragment : Fragment() {
             photoUriString = uri ?: ""
         }
 
+
+        val options = arrayOf(
+            "Water Quality Issues in Ponds/Lakes",
+            "Urban Flooding",
+            "Other"
+        )
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            options
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val spinner = view.findViewById<Spinner>(R.id.dropdown)
+        spinner.adapter = adapter
+
+
         buttonUploadData.setOnClickListener {
             val problemStatement = editTextProblemStatement.text.toString().trim()
+            val spinnerSelectedItem = spinner.selectedItem.toString() // Get the selected spinner text
+            val intValue = 0 // Replace with your actual integer value
 
-            if (latitude != 0.0 && longitude != 0.0 && !photoUriString.isNullOrEmpty() && !problemStatement.isNullOrEmpty()) {
+            if (latitude != 0.0 && longitude != 0.0 && photoUriString.isNotEmpty() && problemStatement.isNotEmpty()) {
                 showCustomProgressDialog("Loading...")
                 uploadPhotoToFirebase(photoUriString) { photoUrl ->
-                    saveDataToFirebase(Uri.parse(photoUrl), latitude, longitude, problemStatement)
+                    saveDataToFirebase(Uri.parse(photoUrl), latitude, longitude, problemStatement, spinnerSelectedItem, intValue)
                 }
             } else {
                 showCustomLottieToast(R.raw.errorlottie, "Invalid data. Please fill in all fields.")
@@ -100,23 +121,27 @@ class ProblemStatmentFragment : Fragment() {
         photoUri: Uri,
         latitude: Double,
         longitude: Double,
-        problemStatement: String
+        problemStatement: String,
+        spinnerSelectedItem: String,
+        intValue: Int
     ) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let { user ->
             val userId = user.uid
 
             val database = FirebaseDatabase.getInstance()
-            val userReportsRef = database.getReference("user_reports")
-            val newReportRef = userReportsRef.child(userId).push()
+            val userReportsRef = database.getReference("user_reports").child(userId)
+            val newReportRef = userReportsRef.push()
 
-            val reportData = ReportData(
-                userId,
-                latitude,
-                longitude,
-                photoUri.toString(), // Convert Uri to String
-                problemStatement
-            )
+            val reportData = HashMap<String, Any>()
+            reportData["userId"] = userId
+            reportData["latitude"] = latitude
+            reportData["longitude"] = longitude
+            reportData["photoUrl"] = photoUri.toString()
+            reportData["problemStatement"] = problemStatement
+            reportData["spinnerSelectedItem"] = spinnerSelectedItem
+            reportData["intValue"] = intValue
+            reportData["timestamp"] = ServerValue.TIMESTAMP
 
             newReportRef.setValue(reportData)
                 .addOnSuccessListener {
@@ -130,6 +155,7 @@ class ProblemStatmentFragment : Fragment() {
                 }
         }
     }
+
 
     private fun showCustomProgressDialog(message: String) {
         val inflater = LayoutInflater.from(requireContext())

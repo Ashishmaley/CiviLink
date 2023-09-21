@@ -8,4 +8,9 @@
     </style>
 
     <style name="Theme.civilink" parent="Base.Theme.civilink" />
+    <style name="CustomSpinnerDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/black</item>
+         <!-- Customize text color -->
+        <!-- Add more attributes to customize the dialog -->
+    </style>
 </resources>

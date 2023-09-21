@@ -73,7 +73,6 @@ class DisplayProfileFragment : Fragment() {
                         val fetchedUserName = user.name
                         val fetchedUserEmail = user.emailId
                         val fetchedUserPhotoUrl = user.profileImage
-
                         // Update SharedPreferences with fetched data
                         val editor = sharedPreferences.edit()
                         editor.putString("userId", fetchedUserId)
@@ -81,7 +80,6 @@ class DisplayProfileFragment : Fragment() {
                         editor.putString("userEmail", fetchedUserEmail)
                         editor.putString("userPhotoUrl", fetchedUserPhotoUrl)
                         editor.apply()
-
                         // Update UI with fetched data
                         name.text = fetchedUserName
                         email.text = fetchedUserEmail

@@ -18,9 +18,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.airbnb.lottie.LottieAnimationView
-import com.example.civilink.data.models.ImageViewModel
 import com.example.civilink.R
 import com.example.civilink.data.ReportData
+import com.example.civilink.data.models.ImageViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -117,9 +117,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             }
             googleMap.setOnCameraIdleListener {
-                updateMarkersBasedOnZoomLevel()
                 setupDatabaseListener()
             }
+            Log.d("map", "helllllllllllllllllllllllllllllllllllooooooooooooooooooooooooooooooo")
             setupDatabaseListener()
         }
     }
@@ -161,13 +161,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     @SuppressLint("PotentialBehaviorOverride")
     private fun fetchLocationDataFromFirebase(gMap: GoogleMap) {
         val database = FirebaseDatabase.getInstance()
-        val desiredWidth = 120
-        val desiredHeight = 120
-        val originalMarkerBitmap =
-            BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
-        val resizedMarkerBitmap =
-            Bitmap.createScaledBitmap(originalMarkerBitmap, desiredWidth, desiredHeight, false)
-        val customMarker = BitmapDescriptorFactory.fromBitmap(resizedMarkerBitmap)
         val userReportsRef = database.getReference("user_reports")
         val viewModel: ImageViewModel by activityViewModels()
 
@@ -179,9 +172,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         val reportData = reportSnapshot.getValue(ReportData::class.java)
                         reportData?.let { data ->
                             val location = LatLng(data.latitude, data.longitude)
-                            // Create marker options based on zoom level
                             val markerOptions = createMarkerOptions(location, data)
-                            val tag = "${data.userId}|${data.problemDescription}|${data.photoUrl}|${data.latitude}|${data.longitude}|${reportSnapshot.key}"
+                            Log.d("map", "$tag")
+                            Log.d("Firebase Data", "problemDescription: ${data.problemStatement}, photoUrl: ${data.photoUrl}")
+                            val tag = "${data.userId}|${data.problemStatement}|${data.photoUrl}|${data.latitude}|${data.longitude}|${reportSnapshot.key}|${data.spinnerSelectedItem}|${data.intValue}|${data.timestamp}"
                             val marker = googleMap.addMarker(markerOptions)
                             marker?.let { markers.add(it) }
                             marker!!.tag = tag
@@ -201,20 +195,29 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             if (tag != null) {
                 val tagParts = tag.split("|")
-                if (tagParts.size == 6) {
+                if (tagParts.size == 9) {
                     val userId = tagParts[0]
                     val problemDescription = tagParts[1]
                     val imageUrl = tagParts[2]
                     val latitude = tagParts[3].toDoubleOrNull()
                     val longitude = tagParts[4].toDoubleOrNull()
                     val reportId = tagParts[5]
+                    val spinnerSelectedItem = tagParts[6]
+                    val intValue = tagParts[7]
+                    val timestamp = tagParts[8]
+
+                    // Update the ViewModel with the problem description
+                    viewModel.problemDescription = problemDescription
 
                     viewModel.selectedImageUrl = imageUrl
                     viewModel.userEmail = userId
-                    viewModel.problemDescription = problemDescription
                     viewModel.latitude = latitude
                     viewModel.longitude = longitude
                     viewModel.reportId = reportId // Store the report ID
+                    viewModel.spinnerSelectedItem = spinnerSelectedItem // Set spinnerSelectedItem
+                    viewModel.intValue = intValue.toInt() // Set intValue
+                    viewModel.timestamp = timestamp.toLongOrNull() // Set timestamp as Long (if parsing is successful)
+
                     val cameraUpdate = CameraUpdateFactory.newLatLngZoom(marker.position, 15.0f)
                     googleMap.animateCamera(cameraUpdate)
                     val bottomSheetFragment = MyBottomSheetFragment()
@@ -227,41 +230,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+
     private fun createMarkerOptions(location: LatLng, data: ReportData): MarkerOptions {
         // Create different marker icons based on zoom level
-        val zoomLevel = googleMap.cameraPosition.zoom
-        val icon = when {
-            zoomLevel < 10 -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-            zoomLevel < 12 -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-            else -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-        }
+        val desiredWidth = 120
+        val desiredHeight = 120
+        val originalMarkerBitmap =
+            BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
+        val resizedMarkerBitmap =
+            Bitmap.createScaledBitmap(originalMarkerBitmap, desiredWidth, desiredHeight, false)
+        val customMarker = BitmapDescriptorFactory.fromBitmap(resizedMarkerBitmap)
+        val icon = customMarker
 
         return MarkerOptions()
             .position(location)
             .title("User Report")
-            .snippet(data.problemDescription)
+            .snippet(data.problemStatement)
             .icon(icon)
     }
-
-    private fun updateMarkersBasedOnZoomLevel() {
-        val zoomLevel = googleMap.cameraPosition.zoom
-
-        for (marker in markers) {
-            val tag = marker.tag
-            if (tag is ReportData) { // Check if the tag is of type ReportData
-                val markerData = tag as ReportData
-                val markerOptions = createMarkerOptions(marker.position, markerData)
-
-                // Adjust marker visibility based on zoom level
-                if (zoomLevel < 10 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)) {
-                    marker.isVisible = true
-                } else if (zoomLevel < 15 && markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)) {
-                    marker.isVisible = true
-                } else marker.isVisible = markerOptions.icon == BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-            }
-        }
-    }
-
 
 
 

@@ -1,7 +1,10 @@
 package com.example.civilink.image_and_problem
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.civilink.databinding.ActivityImageAndProblemStatementBinding
@@ -17,6 +20,13 @@ class ImageAndProblemStatement : AppCompatActivity() {
     private lateinit var sharedViewModel: SharedViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window: Window = window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = resources.getColor(R.color.black) // Set status bar color to black
+            // Set navigation bar color (if available)
+            window.navigationBarColor = resources.getColor(R.color.black) // Set navigation bar color to black
+        }
         binding = ActivityImageAndProblemStatementBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val navHostFragment = supportFragmentManager

@@ -17,17 +17,79 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        app:cardBackgroundColor="#32767474"
+        app:cardCornerRadius="10dp"
+        android:padding="20dp"
+        app:cardElevation="0dp"
+        android:layout_marginEnd="13dp"
+        android:layout_gravity="end"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
+            android:layout_height="wrap_content">
+        <ImageView
         android:id="@+id/mapToggleImageView"
         android:layout_width="37dp"
         android:layout_height="37dp"
         android:padding="5dp"
-        android:background="#BAFBF9F9"
-        android:layout_marginTop="55dp"
-        android:layout_marginRight="13dp"
-        android:layout_gravity="end"
-        android:src="@drawable/satelliteoff"
-        android:clickable="true"
+            android:background="@drawable/button_selector"
+            android:layout_margin="2dp"
+        android:src="@drawable/satellite"
         android:elevation="15dp"
         />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/white"/>
+            <ImageButton
+                android:id="@+id/btnMyLocation"
+                android:layout_width="37dp"
+                android:padding="5dp"
+                android:fadingEdge="vertical"
+                android:layout_height="37dp"
+                android:background="@drawable/button_selector"
+                android:src="@drawable/my_location_icon"
+                android:scaleType="centerCrop"
+                android:layout_margin="2dp"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/white"/>
+
+            <ImageButton
+                android:id="@+id/btnDirections"
+                android:layout_width="37dp"
+                android:padding="5dp"
+                android:src="@drawable/direction"
+                android:layout_height="37dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/button_selector"
+                android:layout_margin="2dp"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/white"/>
+
+            <ToggleButton
+                android:visibility="gone"
+                android:id="@+id/toggleHotspotsButton"
+                android:layout_width="37dp"
+                android:layout_height="37dp"
+                android:textOff=""
+                android:text=""
+                android:textOn=""
+                android:padding="5dp"
+                android:layout_gravity="end"
+                android:background="@drawable/toggle_button_selector"
+                android:checked="false"
+                />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </FrameLayout>

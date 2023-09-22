@@ -7,12 +7,21 @@ import android.os.Bundle
 import android.view.Window
 import android.view.WindowManager
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.example.civilink.R
 import com.example.civilink.UserProfile.UserProfileEdit
 import com.example.civilink.adapters.MyPagerAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.squareup.picasso.Picasso
+import de.hdodenhof.circleimageview.CircleImageView
 
 class MainViewPager : AppCompatActivity() {
     private var isSwipingEnabled = true
@@ -54,7 +63,51 @@ class MainViewPager : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.setIcon(tabIcons[position])
         }.attach()
-        val userProfileImageView = findViewById<ImageView>(R.id.userProfile)
+        val userProfileImageView = findViewById<CircleImageView>(R.id.userProfile)
+        val firebaseAuth = FirebaseAuth.getInstance()
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            val databaseReference = FirebaseDatabase.getInstance().reference
+            val userId = user.uid // Use the user's ID obtained from Firebase Authentication
+            val userReference = databaseReference.child("users").child(userId)
+
+            userReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                // Inside your ValueEventListener
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        val profileImageUrl = dataSnapshot.child("profileImage").value as String?
+
+                        if (profileImageUrl != null) {
+                            Picasso.get()
+                                .load(profileImageUrl)
+                                .placeholder(R.drawable.user)
+                                .error(R.drawable.user)
+                                .into(userProfileImageView)
+                        } else {
+                            // Handle the case where the profile image URL is not found.
+                            showToast("Profile image URL not found.")
+                        }
+                    } else {
+                        // Handle the case where the user's data does not exist.
+                        showToast("User data does not exist.")
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle any errors that occur during the fetch.
+                    showToast("Error fetching data: " + databaseError.message)
+                }
+
+                // Define a showToast function
+                private fun showToast(message: String) {
+                    Toast.makeText(this@MainViewPager, message, Toast.LENGTH_SHORT).show()
+                }
+
+            })
+
+        } else {
+        }
+
         userProfileImageView.setOnClickListener {
             val intent = Intent(this,UserProfileEdit::class.java)
             startActivity(intent)

@@ -2,10 +2,10 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="colorAccent">#FAC53B</color>
+    <color name="colorAccent">#73FAC53B</color>
     <color name="hint">#A8A8A8</color>
     <color name="status_bar_color">#00080808</color>
-    <color name="overlay">#AAF10F0F</color>
+    <color name="overlay">#86F10F0F</color>
     <color name="windowBackground">#1C1C1C</color>
     <color name="transBackground">#8FEEEDED</color>
     <color name="transparent">#00000000</color>

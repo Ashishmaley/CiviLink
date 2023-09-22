@@ -1,6 +1,10 @@
 package com.example.civilink
+import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -17,9 +21,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var forgotText : TextView
 
     //
+    @SuppressLint("ObsoleteSdkInt")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window: Window = window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = resources.getColor(R.color.reset_bg_normal_color) // Set status bar color to black
+            // Set navigation bar color (if available)
+            window.navigationBarColor = resources.getColor(R.color.reset_bg_normal_color) // Set navigation bar color to black
+        }
 
         btnSignUp = findViewById(R.id.btnSignUp)
         btnLogin = findViewById(R.id.btnLogin)

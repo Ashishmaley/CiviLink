@@ -2,8 +2,11 @@ package com.example.civilink
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.view.Window
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
@@ -34,6 +37,13 @@ class SplashScreenActivity : AppCompatActivity() {
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
         storage = FirebaseStorage.getInstance()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window: Window = window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = resources.getColor(R.color.teal_700) // Set status bar color to black
+            // Set navigation bar color (if available)
+            window.navigationBarColor = resources.getColor(R.color.app_bg) // Set navigation bar color to black
+        }
 
         fadeInAnimation = AnimationUtils.loadAnimation(this, R.anim.splash_anim)
 

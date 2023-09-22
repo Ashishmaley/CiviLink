@@ -4,14 +4,15 @@
     <color name="white">#FFFFFFFF</color>
     <color name="colorAccent">#FAC53B</color>
     <color name="hint">#A8A8A8</color>
-    <color name="status_bar_color">#00FF5733</color>
+    <color name="status_bar_color">#00080808</color>
     <color name="overlay">#AAF10F0F</color>
     <color name="windowBackground">#1C1C1C</color>
-    <color name="transBackground">#CC1C1C1C</color>
+    <color name="transBackground">#8FEEEDED</color>
     <color name="transparent">#00000000</color>
     <color name="clr_bg">#00232222</color>
-    <color name="reset_bg_normal_color">#3a3636</color>
+    <color name="reset_bg_normal_color">#72ABF9</color>
     <color name="reset_bg_pressed_color">#191818</color>
     <color name="mainbg">#20B4C4F1</color>
-    <color name="teal_700">#39D2F8</color>
+    <color name="teal_700">#7DAEF2</color>
+    <color name="app_bg">#76AFFF</color>
 </resources>

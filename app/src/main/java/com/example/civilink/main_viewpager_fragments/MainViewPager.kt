@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Window
+import android.view.WindowManager
 import android.widget.ImageView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.civilink.R
@@ -17,8 +19,14 @@ class MainViewPager : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStatusBarColor(R.color.status_bar_color)
         setContentView(R.layout.activity_main_viewpager)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window: Window = window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = resources.getColor(R.color.black) // Set status bar color to black
+            // Set navigation bar color (if available)
+            window.navigationBarColor = resources.getColor(R.color.black) // Set navigation bar color to black
+        }
         val viewPager: ViewPager2 = findViewById(R.id.view_pager)
         val tabLayout: TabLayout = findViewById(R.id.tabs)
         val fragments = listOf(

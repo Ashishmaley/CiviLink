@@ -1,14 +1,18 @@
 package com.example.civilink.image_and_problem
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import androidx.fragment.app.Fragment
 import com.example.civilink.databinding.FragmentImageDisplayBinding
 import com.squareup.picasso.Picasso
 import androidx.lifecycle.ViewModelProvider
+import com.example.civilink.R
 import com.example.civilink.data.models.SharedViewModel
 //ashishmaley
 
@@ -16,12 +20,12 @@ class ImageDisplayFragment : Fragment() {
     private lateinit var binding: FragmentImageDisplayBinding
     private lateinit var sharedViewModel: SharedViewModel
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentImageDisplayBinding.inflate(inflater, container, false)
+
         return binding.root
     }
 
@@ -29,7 +33,6 @@ class ImageDisplayFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-
         // Observe the LiveData from the shared ViewModel
         sharedViewModel.imageUri.observe(viewLifecycleOwner) { uri ->
             if (!uri.isNullOrEmpty()) {

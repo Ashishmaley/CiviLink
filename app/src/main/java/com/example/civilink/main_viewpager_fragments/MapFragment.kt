@@ -2,17 +2,22 @@ package com.example.civilink.main_viewpager_fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -28,6 +33,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -37,7 +44,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class MapFragment : Fragment(), OnMapReadyCallback {
+class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListener{
 
     private lateinit var mapView: MapView
     private val LOCATION_PERMISSION_REQUEST_CODE = 123
@@ -46,7 +53,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mapToggleImageView: ImageView
     private val markers = mutableListOf<Marker>()
     private lateinit var childEventListener: ChildEventListener
-
+    private var destinationLatitude: Double? = null
+    private var destinationLongitude: Double? = null
+    private val hotspotCircles = mutableListOf<Circle>()
+    private val hotspotCounts = mutableMapOf<String, Int>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -85,6 +95,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
+        googleMap.uiSettings.isMyLocationButtonEnabled = false
+        val btnMyLocation = view?.findViewById<ImageButton>(R.id.btnMyLocation)
+        val btnDirections = view?.findViewById<ImageButton>(R.id.btnDirections)
         if (isLocationPermissionGranted()) {
             if (ActivityCompat.checkSelfPermission(
                     requireContext(),
@@ -101,7 +114,54 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     val userLocation = LatLng(location.latitude, location.longitude)
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 12.0f))
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 18.0f))
+                }
+            }
+            btnMyLocation?.setOnClickListener {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        val userLocation = LatLng(location.latitude, location.longitude)
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 18.0f))
+                    }
+                }
+            }
+            googleMap.setOnCameraIdleListener(this)
+            btnDirections?.setOnClickListener {
+                // Check if the user's current location is available
+                if (destinationLatitude != null && destinationLongitude != null) {
+                    // Retrieve the user's current location
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        location?.let {
+                            val origin = "${location.latitude},${location.longitude}"
+                            val destination = "$destinationLatitude,$destinationLongitude"
+                            val uri =
+                                Uri.parse("https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination")
+                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                            startActivity(intent)
+                        } ?: run {
+                            // Handle the case where the user's location is not available
+                            Toast.makeText(
+                                requireContext(),
+                                "User's location not available.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } else {
+                    // Handle the case where one or more coordinates are missing
+                    Toast.makeText(requireContext(), "Coordinates are missing.", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+            val hotspotToggle = view?.findViewById<ToggleButton>(R.id.toggleHotspotsButton)
+
+            hotspotToggle?.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    // Hotspots are enabled, so show them
+                    createHotspotCircles(googleMap, googleMap.cameraPosition.zoom)
+                } else {
+                    // Hotspots are disabled, so remove them
+                    removeHotspotCircles()
                 }
             }
 
@@ -110,19 +170,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 Log.d("MapFragment", "ImageView clicked") // Add this line for debugging
                 if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
                     googleMap.mapType = GoogleMap.MAP_TYPE_SATELLITE // Switch to Satellite view
-                    mapToggleImageView.setImageResource(R.drawable.satellite) // Set the Satellite image
+                    mapToggleImageView.setImageResource(R.drawable.satelliteoff) // Set the Satellite image
                 } else {
                     googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL // Switch to Normal view
-                    mapToggleImageView.setImageResource(R.drawable.satelliteoff) // Set the Normal image
+                    mapToggleImageView.setImageResource(R.drawable.satellite) // Set the Normal image
                 }
             }
-            googleMap.setOnCameraIdleListener {
-                setupDatabaseListener()
-            }
-            Log.d("map", "helllllllllllllllllllllllllllllllllllooooooooooooooooooooooooooooooo")
             setupDatabaseListener()
+
         }
     }
+
     private fun setupDatabaseListener() {
         childEventListener = object : ChildEventListener {
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
@@ -148,7 +206,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun isLocationPermissionGranted(): Boolean {
-
         val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
         val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
         return (ContextCompat.checkSelfPermission(requireContext(), fineLocationPermission)
@@ -156,6 +213,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             requireContext(),
             coarseLocationPermission
         ) == PackageManager.PERMISSION_GRANTED)
+    }
+    private fun removeHotspotCircles() {
+        for (circle in hotspotCircles) {
+            circle.remove()
+        }
+        hotspotCircles.clear()
     }
 
     @SuppressLint("PotentialBehaviorOverride")
@@ -167,18 +230,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         userReportsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 markers.clear() // Clear existing markers
+                hotspotCircles.clear()
+                hotspotCounts.clear()
+                val ZOOM_THRESHOLD = 1.0f
+                val currentZoomLevel = gMap.cameraPosition.zoom
                 for (userSnapshot in dataSnapshot.children) {
                     for (reportSnapshot in userSnapshot.children) {
                         val reportData = reportSnapshot.getValue(ReportData::class.java)
                         reportData?.let { data ->
                             val location = LatLng(data.latitude, data.longitude)
-                            val markerOptions = createMarkerOptions(location, data)
-                            Log.d("map", "$tag")
-                            Log.d("Firebase Data", "problemDescription: ${data.problemStatement}, photoUrl: ${data.photoUrl}")
-                            val tag = "${data.userId}|${data.problemStatement}|${data.photoUrl}|${data.latitude}|${data.longitude}|${reportSnapshot.key}|${data.spinnerSelectedItem}|${data.intValue}|${data.timestamp}"
+                            val zoomLevel = 20.0f
+                            if (currentZoomLevel >= ZOOM_THRESHOLD){
+                            val markerOptions = createMarkerOptions(location,zoomLevel)
+                            val tag =
+                                "${data.userId}|${data.problemStatement}|${data.photoUrl}|${data.latitude}|${data.longitude}|${reportSnapshot.key}|${data.spinnerSelectedItem}|${data.intValue}|${data.timestamp}"
                             val marker = googleMap.addMarker(markerOptions)
                             marker?.let { markers.add(it) }
-                            marker!!.tag = tag
+                            marker!!.tag = tag}
+                            val hotspotKey = "${data.latitude}|${data.longitude}"
+                            hotspotCounts[hotspotKey] = hotspotCounts.getOrDefault(hotspotKey, 0) + 1
                         }
                     }
                 }
@@ -201,6 +271,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     val imageUrl = tagParts[2]
                     val latitude = tagParts[3].toDoubleOrNull()
                     val longitude = tagParts[4].toDoubleOrNull()
+                    destinationLatitude = tagParts[3].toDoubleOrNull()
+                    destinationLongitude = tagParts[4].toDoubleOrNull()
                     val reportId = tagParts[5]
                     val spinnerSelectedItem = tagParts[6]
                     val intValue = tagParts[7]
@@ -229,24 +301,79 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             true
         }
     }
+    override fun onCameraIdle() {
+        // This method will be called when the camera position changes (including zoom changes)
+        val currentZoomLevel = googleMap.cameraPosition.zoom
+
+        if (currentZoomLevel >= 9.0f) {
+            updateMarkers()
+        } else {
+            clearMarkers()
+        }
+    }
+
+    private fun updateMarkers() {
+        fetchLocationDataFromFirebase(googleMap)
+    }
+
+    private fun clearMarkers() {
+        googleMap.clear()
+    }
 
 
-    private fun createMarkerOptions(location: LatLng, data: ReportData): MarkerOptions {
-        // Create different marker icons based on zoom level
-        val desiredWidth = 120
-        val desiredHeight = 120
-        val originalMarkerBitmap =
-            BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
-        val resizedMarkerBitmap =
-            Bitmap.createScaledBitmap(originalMarkerBitmap, desiredWidth, desiredHeight, false)
+    private fun createHotspotCircles(gMap: GoogleMap, currentZoomLevel: Float) {
+        for ((hotspotKey, count) in hotspotCounts) {
+            val latitudeLongitude = hotspotKey.split("|")
+            if (latitudeLongitude.size == 2) {
+                val latitude = latitudeLongitude[0].toDoubleOrNull()
+                val longitude = latitudeLongitude[1].toDoubleOrNull()
+                if (latitude != null && longitude != null) {
+                    val location = LatLng(latitude, longitude)
+                    createHotspotCircle(gMap, location, count, currentZoomLevel)
+                }
+            }
+        }
+    }
+
+
+    private fun createHotspotCircle(gMap: GoogleMap, location: LatLng, count: Int, currentZoomLevel: Float) {
+        // Define the minimum and maximum radius for the hotspot circle
+        val minRadiusMeters = 100.0
+        val maxRadiusMeters = 1000.0
+
+        val zoomToRadiusFactor = 100.0f // Adjust this factor as needed
+        val radius = minRadiusMeters + (maxRadiusMeters - minRadiusMeters) * (currentZoomLevel / zoomToRadiusFactor)
+
+        val circleOptions = CircleOptions()
+            .center(location)
+            .radius(radius)
+            .strokeColor(ContextCompat.getColor(requireContext(), R.color.colorAccent))
+            .fillColor(ContextCompat.getColor(requireContext(), R.color.overlay))
+
+        val hotspotCircle = gMap.addCircle(circleOptions)
+        hotspotCircles.add(hotspotCircle)
+    }
+
+    private fun createMarkerOptions(location: LatLng, zoomLevel: Float): MarkerOptions {
+        val minSize = 30 // Minimum marker size in pixels
+        val maxSize = 120 // Maximum marker size in pixels
+        val desiredSize = minSize + (maxSize - minSize) * (zoomLevel / 15.0f) // Adjust 15.0f based on your desired reference zoom level
+
+        // Make sure the size is within the desired range
+        val markerSize = desiredSize.coerceIn(minSize.toFloat(), maxSize.toFloat())
+
+        val originalMarkerBitmap = BitmapFactory.decodeResource(resources, R.drawable.location_1)
+        val resizedMarkerBitmap = Bitmap.createScaledBitmap(
+            originalMarkerBitmap,
+            markerSize.toInt(),
+            markerSize.toInt(),
+            true
+        )
         val customMarker = BitmapDescriptorFactory.fromBitmap(resizedMarkerBitmap)
-        val icon = customMarker
 
         return MarkerOptions()
             .position(location)
-            .title("User Report")
-            .snippet(data.problemStatement)
-            .icon(icon)
+            .icon(customMarker)
     }
 
 

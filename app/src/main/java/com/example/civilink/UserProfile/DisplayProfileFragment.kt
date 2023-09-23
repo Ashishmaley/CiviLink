@@ -1,14 +1,18 @@
 package com.example.civilink.UserProfile
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.example.civilink.MainActivity
 import com.example.civilink.R
 import com.example.civilink.data.User
 import com.squareup.picasso.Picasso
@@ -55,6 +59,21 @@ class DisplayProfileFragment : Fragment() {
             email.text = userEmail
             userIdTextView.text = userId
             Picasso.get().load(userPhotoUrl).into(profileImage)
+        }
+        val logoutButton = view?.findViewById<Button>(R.id.logOut)
+        logoutButton?.setOnClickListener {
+            auth?.signOut()
+            val intent = Intent(requireContext(), MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            Log.d("DisplayProfileFragment", "onCreate called")
+
+            auth = FirebaseAuth.getInstance()
+
+            if (auth?.currentUser == null) {
+                Log.d("DisplayProfileFragment", "User is not signed in") // Add this line for debugging
+            }
+            requireActivity().finish()
         }
 
         return view

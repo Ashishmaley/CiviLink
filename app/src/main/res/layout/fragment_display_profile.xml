@@ -117,6 +117,18 @@
             android:layout_gravity="center"
             android:focusable="true" />
     </LinearLayout>
+        <Button
+            android:id="@+id/logOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/advent_pro_medium"
+            android:text="Log Out"
+            android:layout_gravity="right"
+            android:theme="@style/CustomSpinnerDialogTheme"
+            android:backgroundTint="#BDABC9F2"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            />
     </LinearLayout>
     </androidx.cardview.widget.CardView>
 </ScrollView>

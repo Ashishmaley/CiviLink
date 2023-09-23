@@ -9,6 +9,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
+import com.example.civilink.FeedFragment
 import com.example.civilink.R
 import com.example.civilink.UserProfile.UserProfileEdit
 import com.example.civilink.adapters.MyPagerAdapter
@@ -40,7 +41,8 @@ class MainViewPager : AppCompatActivity() {
         val tabLayout: TabLayout = findViewById(R.id.tabs)
         val fragments = listOf(
             MapFragment(),
-            CameraFragment()
+            CameraFragment(),
+            FeedFragment()
         )
         val adapter = MyPagerAdapter(this,fragments)
         viewPager.adapter = adapter
@@ -57,7 +59,8 @@ class MainViewPager : AppCompatActivity() {
 
         val tabIcons = listOf(
             R.drawable.google_icon,
-            R.drawable.lens
+            R.drawable.lens,
+            R.drawable.feed
         )
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->

@@ -1,4 +1,5 @@
 package com.example.civilink
+
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -23,6 +24,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 
 class SplashScreenActivity : AppCompatActivity() {
 
@@ -30,6 +33,7 @@ class SplashScreenActivity : AppCompatActivity() {
     private lateinit var fadeInAnimation: Animation
     private var storage: FirebaseStorage? = null
     private var database: FirebaseDatabase? = null
+    private var networkReceiver: NetworkReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +45,6 @@ class SplashScreenActivity : AppCompatActivity() {
             val window: Window = window
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             window.statusBarColor = resources.getColor(R.color.teal_700) // Set status bar color to black
-            // Set navigation bar color (if available)
             window.navigationBarColor = resources.getColor(R.color.app_bg) // Set navigation bar color to black
         }
 
@@ -88,8 +91,9 @@ class SplashScreenActivity : AppCompatActivity() {
             }, 4000) // 2 seconds delay
         }
         else {
-            // No internet connection, show a toast message or take appropriate action
             showCustomLottieToast(R.raw.networkerror, "No Internet Connection")
+            networkReceiver = NetworkReceiver()
+            registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
         }
     }
 
@@ -112,11 +116,71 @@ class SplashScreenActivity : AppCompatActivity() {
         toast.view = layout
         toast.show()
     }
-
     private fun isNetworkConnected(): Boolean {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
+    inner class NetworkReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (isNetworkConnected()) {
+                val currentUser = auth.currentUser
+                if (currentUser != null && currentUser.isEmailVerified) {
+                    val uid = auth.currentUser!!.uid
+                    database!!.reference
+                        .child("users")
+                        .child(uid)
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    if (dataSnapshot.child("uid")
+                                            .exists() && dataSnapshot.child("name").exists()
+                                    ) {
+                                        startActivity(
+                                            Intent(
+                                                this@SplashScreenActivity,
+                                                MainViewPager::class.java
+                                            )
+                                        )
+                                        this@SplashScreenActivity.finish()
+                                    } else {
+                                        startActivity(
+                                            Intent(
+                                                this@SplashScreenActivity,
+                                                MainActivity::class.java
+                                            )
+                                        )
+                                        this@SplashScreenActivity.finish()
+                                    }
+                                } else {
+                                    startActivity(
+                                        Intent(
+                                            this@SplashScreenActivity,
+                                            MainActivity::class.java
+                                        )
+                                    )
+                                    this@SplashScreenActivity.finish()
+                                }
+                            }
+
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                startActivity(
+                                    Intent(
+                                        this@SplashScreenActivity,
+                                        MainActivity::class.java
+                                    )
+                                )
+                                this@SplashScreenActivity.finish()
+                                showCustomLottieToast(
+                                    R.raw.networkerror,
+                                    "Check Internet connection"
+                                )
+                            }
+                        })
+                }
+            }
+        }
     }
 }
 

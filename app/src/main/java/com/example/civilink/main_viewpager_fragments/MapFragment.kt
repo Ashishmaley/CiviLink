@@ -359,7 +359,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
         val maxSize = 120 // Maximum marker size in pixels
         val desiredSize = minSize + (maxSize - minSize) * (zoomLevel / 15.0f) // Adjust 15.0f based on your desired reference zoom level
 
-        // Make sure the size is within the desired range
         val markerSize = desiredSize.coerceIn(minSize.toFloat(), maxSize.toFloat())
 
         val originalMarkerBitmap = BitmapFactory.decodeResource(resources, R.drawable.location_1)

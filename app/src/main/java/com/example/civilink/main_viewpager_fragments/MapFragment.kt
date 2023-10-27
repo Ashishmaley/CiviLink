@@ -109,6 +109,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
             ) {
                 return
             }
+            googleMap.setOnCameraIdleListener(this)
+            googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
             googleMap.isMyLocationEnabled = true
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -125,7 +127,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                     }
                 }
             }
-            googleMap.setOnCameraIdleListener(this)
             btnDirections?.setOnClickListener {
                 // Check if the user's current location is available
                 if (destinationLatitude != null && destinationLongitude != null) {
@@ -148,7 +149,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                         }
                     }
                 } else {
-                    // Handle the case where one or more coordinates are missing
                     Toast.makeText(requireContext(), "Coordinates are missing.", Toast.LENGTH_SHORT)
                         .show()
                 }
@@ -165,7 +165,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                 }
             }
 
-            googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
             mapToggleImageView.setOnClickListener {
                 Log.d("MapFragment", "ImageView clicked") // Add this line for debugging
                 if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {

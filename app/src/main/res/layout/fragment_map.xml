@@ -45,21 +45,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/white"/>
-            <ImageButton
-                android:id="@+id/btnMyLocation"
-                android:layout_width="37dp"
-                android:padding="5dp"
-                android:fadingEdge="vertical"
-                android:layout_height="37dp"
-                android:background="@drawable/button_selector"
-                android:src="@drawable/my_location_icon"
-                android:scaleType="centerCrop"
-                android:layout_margin="2dp"
-                />
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/white"/>
 
             <ImageButton
                 android:id="@+id/btnDirections"
@@ -71,11 +56,6 @@
                 android:background="@drawable/button_selector"
                 android:layout_margin="2dp"
                 />
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/white"/>
-
             <ToggleButton
                 android:visibility="gone"
                 android:id="@+id/toggleHotspotsButton"
@@ -89,7 +69,26 @@
                 android:background="@drawable/toggle_button_selector"
                 android:checked="false"
                 />
-
         </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        app:cardBackgroundColor="#32767474"
+        android:layout_marginTop="210dp"
+        android:layout_gravity="center"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
+        android:padding="20dp"
+        android:layout_height="wrap_content">
+    <ImageButton
+        android:id="@+id/btnMyLocation"
+        android:layout_width="37dp"
+        android:fadingEdge="vertical"
+        android:layout_height="37dp"
+        android:layout_margin="5dp"
+        android:background="@drawable/button_selector"
+        android:src="@drawable/my_location_icon"
+        android:scaleType="centerCrop"
+        />
     </androidx.cardview.widget.CardView>
 </FrameLayout>

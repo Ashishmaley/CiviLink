@@ -24,7 +24,7 @@
     <Button
         android:id="@+id/capture"
         android:layout_width="75dp"
-        android:background="@drawable/otp_boxcircle"
+        android:background="@drawable/otp_boxcircle1"
         android:layout_height="75dp"
         android:backgroundTint="@color/hint"
         android:layout_marginBottom="90dp"

@@ -56,10 +56,23 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         ptitle.text = imageViewModel.spinnerSelectedItem
         like.text = imageViewModel.intValue.toString()
 
-        val timestamp = imageViewModel.timestamp // Assuming it's in seconds
-        val timestampMillis = timestamp?.times(1000L) // Convert to milliseconds
-        val date = timestampMillis?.let { Date(it) }
-        time.text = date.toString()
+        val formattedTimestamp = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
+            .format(imageViewModel.timestamp?.let { Date(it) })
+        time.text = formattedTimestamp.toString()
+
+
+
+
+//        val commetCount = view.findViewById<TextView>(R.id.commentCount)
+
+
+
+
+
+
+
+
+
 
         reportId = imageViewModel.reportId
         userId = imageViewModel.userEmail

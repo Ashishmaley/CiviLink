@@ -3,23 +3,18 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:padding="10dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:padding="16dp"
-    android:background="@drawable/otp_box">
+    android:background="@drawable/otp_boxcircle">
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottieAnimationView"
         android:layout_width="40dp"
+        android:background="#05FDFDFD"
         android:layout_height="40dp"
         app:lottie_autoPlay="true"
         />
-    <androidx.cardview.widget.CardView
-        android:layout_width="wrap_content"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#BD1F1F1F"
-        android:layout_height="wrap_content">
     <TextView
         android:id="@+id/textViewMessage"
         android:layout_width="wrap_content"
@@ -27,9 +22,9 @@
         android:text="Custom Toast Message"
         android:textColor="#FFFFFF"
         android:padding="10dp"
+        android:background="@color/black"
         android:fontFamily="@font/advent_pro_medium"
         android:textSize="16sp"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="8dp" />
-    </androidx.cardview.widget.CardView>
 </LinearLayout>

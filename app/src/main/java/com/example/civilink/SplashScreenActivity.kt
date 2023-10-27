@@ -26,6 +26,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.content.SharedPreferences
 
 class SplashScreenActivity : AppCompatActivity() {
 
@@ -34,6 +35,9 @@ class SplashScreenActivity : AppCompatActivity() {
     private var storage: FirebaseStorage? = null
     private var database: FirebaseDatabase? = null
     private var networkReceiver: NetworkReceiver? = null
+    private lateinit var sharedPrefs: SharedPreferences
+    private val PREFS_NAME = "MyPrefsFile"
+    private val APP_OPENED_BEFORE = "app_opened_before"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +51,10 @@ class SplashScreenActivity : AppCompatActivity() {
             window.statusBarColor = resources.getColor(R.color.teal_700) // Set status bar color to black
             window.navigationBarColor = resources.getColor(R.color.app_bg) // Set navigation bar color to black
         }
+        sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+        val appOpenedBefore = sharedPrefs.getBoolean(APP_OPENED_BEFORE, false)
+
 
         fadeInAnimation = AnimationUtils.loadAnimation(this, R.anim.splash_anim)
 
@@ -56,6 +64,7 @@ class SplashScreenActivity : AppCompatActivity() {
         // Check for internet connectivity
         if (isNetworkConnected()) {
             Handler().postDelayed({
+                if (appOpenedBefore) {
                 val currentUser = auth.currentUser
                 if (currentUser != null && currentUser.isEmailVerified) {
                     val uid = auth.currentUser!!.uid
@@ -86,6 +95,11 @@ class SplashScreenActivity : AppCompatActivity() {
                         })
                 } else {
                     startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                }
+                }
+                else{
+                    startActivity(Intent(this,IntroPager::class.java))
                     finish()
                 }
             }, 4000) // 2 seconds delay

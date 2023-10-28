@@ -30,7 +30,7 @@ class FeedFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_feed, container, false)
         recyclerView = view.findViewById(R.id.feedReCycle)
-        reportDataAdapter = ReportDataAdapter(reportDataList)
+        reportDataAdapter = ReportDataAdapter(reportDataList,requireContext())
         recyclerView.adapter = reportDataAdapter
         recyclerView.layoutManager = LinearLayoutManager(context)
         return view

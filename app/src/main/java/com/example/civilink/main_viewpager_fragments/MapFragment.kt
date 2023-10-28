@@ -96,8 +96,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
         googleMap.uiSettings.isMyLocationButtonEnabled = false
-        val btnMyLocation = view?.findViewById<ImageButton>(R.id.btnMyLocation)
-        val btnDirections = view?.findViewById<ImageButton>(R.id.btnDirections)
         if (isLocationPermissionGranted()) {
             if (ActivityCompat.checkSelfPermission(
                     requireContext(),
@@ -109,6 +107,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
             ) {
                 return
             }
+            googleMap.setOnCameraIdleListener(this)
+            googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
             googleMap.isMyLocationEnabled = true
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -117,6 +117,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 18.0f))
                 }
             }
+            setupDatabaseListener()
+            val btnMyLocation = view?.findViewById<ImageButton>(R.id.btnMyLocation)
+            val btnDirections = view?.findViewById<ImageButton>(R.id.btnDirections)
+            val hotspotToggle = view?.findViewById<ToggleButton>(R.id.toggleHotspotsButton)
             btnMyLocation?.setOnClickListener {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let {
@@ -125,7 +129,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                     }
                 }
             }
-            googleMap.setOnCameraIdleListener(this)
             btnDirections?.setOnClickListener {
                 // Check if the user's current location is available
                 if (destinationLatitude != null && destinationLongitude != null) {
@@ -148,13 +151,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                         }
                     }
                 } else {
-                    // Handle the case where one or more coordinates are missing
                     Toast.makeText(requireContext(), "Coordinates are missing.", Toast.LENGTH_SHORT)
                         .show()
                 }
             }
-            val hotspotToggle = view?.findViewById<ToggleButton>(R.id.toggleHotspotsButton)
-
             hotspotToggle?.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     // Hotspots are enabled, so show them
@@ -165,7 +165,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                 }
             }
 
-            googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
             mapToggleImageView.setOnClickListener {
                 Log.d("MapFragment", "ImageView clicked") // Add this line for debugging
                 if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
@@ -176,8 +175,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                     mapToggleImageView.setImageResource(R.drawable.satellite) // Set the Normal image
                 }
             }
-            setupDatabaseListener()
-
         }
     }
 
@@ -305,20 +302,19 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
         // This method will be called when the camera position changes (including zoom changes)
         val currentZoomLevel = googleMap.cameraPosition.zoom
 
-        if (currentZoomLevel >= 9.0f) {
-            updateMarkers()
-        } else {
-            clearMarkers()
-        }
+//        if (currentZoomLevel >= 5.0f) {
+//            updateMarkers()
+//        } else {
+//            clearMarkers()
+//        }
     }
-
-    private fun updateMarkers() {
-        fetchLocationDataFromFirebase(googleMap)
-    }
-
-    private fun clearMarkers() {
-        googleMap.clear()
-    }
+//    private fun updateMarkers() {
+//        fetchLocationDataFromFirebase(googleMap)
+//    }
+//
+//    private fun clearMarkers() {
+//        googleMap.clear()
+//    }
 
 
     private fun createHotspotCircles(gMap: GoogleMap, currentZoomLevel: Float) {
@@ -361,7 +357,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
 
         val markerSize = desiredSize.coerceIn(minSize.toFloat(), maxSize.toFloat())
 
-        val originalMarkerBitmap = BitmapFactory.decodeResource(resources, R.drawable.location_1)
+        val originalMarkerBitmap = BitmapFactory.decodeResource(resources, R.drawable.handshakeappicon)
         val resizedMarkerBitmap = Bitmap.createScaledBitmap(
             originalMarkerBitmap,
             markerSize.toInt(),

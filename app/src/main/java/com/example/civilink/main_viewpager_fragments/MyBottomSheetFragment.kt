@@ -1,6 +1,8 @@
 package  com.example.civilink.main_viewpager_fragments
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,6 +19,14 @@ import com.squareup.picasso.Picasso
 import android.location.Geocoder
 import android.widget.Button
 import androidx.cardview.widget.CardView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.davemorrissey.labs.subscaleview.ImageSource
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -38,6 +48,7 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         imageViewModel = ViewModelProvider(requireActivity()).get(ImageViewModel::class.java)
     }
 
+    @SuppressLint("ResourceAsColor")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,21 +56,42 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         val view = inflater.inflate(R.layout.fragment_my_bottom_sheet, container, false)
         Log.d("MyBottomSheetFragment", "onCreateView called")
         val imageViewModel: ImageViewModel by activityViewModels()
-        val imageView = view.findViewById<ImageView>(R.id.imageView)
+        val imageView = view.findViewById<SubsamplingScaleImageView>(R.id.imageView)
         deleteButton = view.findViewById(R.id.deleteButton)
         val address = view.findViewById<TextView>(R.id.useId)
         val problemDescription = view.findViewById<TextView>(R.id.problem)
         var ptitle = view.findViewById<TextView>(R.id.pTitle)
         var like = view.findViewById<TextView>(R.id.like)
         var time = view.findViewById<TextView>(R.id.timeAndDate)
+        val shimmer: Shimmer = Shimmer.ColorHighlightBuilder()
+            .setBaseColor(R.color.white)
+            .setHighlightColor(R.color.white)
+            .setDirection(Shimmer.Direction.LEFT_TO_RIGHT)
+            .setAutoStart(true)
+            .build()
+        view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout).setShimmer(shimmer)
+        view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout).startShimmer()
 
         ptitle.text = imageViewModel.spinnerSelectedItem
         like.text = imageViewModel.intValue.toString()
 
-        val timestamp = imageViewModel.timestamp // Assuming it's in seconds
-        val timestampMillis = timestamp?.times(1000L) // Convert to milliseconds
-        val date = timestampMillis?.let { Date(it) }
-        time.text = date.toString()
+        val formattedTimestamp = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
+            .format(imageViewModel.timestamp?.let { Date(it) })
+        time.text = formattedTimestamp.toString()
+
+
+
+
+//        val commetCount = view.findViewById<TextView>(R.id.commentCount)
+
+
+
+
+
+
+
+
+
 
         reportId = imageViewModel.reportId
         userId = imageViewModel.userEmail
@@ -73,12 +105,24 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
             val longitude = imageViewModel.longitude ?: 0.0
             address.text = getAddressFromLocation(latitude, longitude)
             problemDescription.text = imageViewModel.problemDescription
-            Picasso.get()
+            Glide.with(this)
+                .asBitmap()
                 .load(imageUrl)
-                .into(imageView)
+                .apply(RequestOptions().dontTransform())
+                .into(object : CustomTarget<Bitmap>() {
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                        imageView.setImage(ImageSource.bitmap(resource))
+                    }
+
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        // Handle placeholder if needed
+                    }
+                })
         }
 
         setupDeleteButton()
+        view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout).stopShimmer()
+        view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout).hideShimmer()
         return view
     }
 

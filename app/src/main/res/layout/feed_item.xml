@@ -3,51 +3,84 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_marginBottom="5dp"
+    android:padding="10dp"
     android:layout_height="wrap_content">
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        app:cardBackgroundColor="#EF0A0A0A"
+        app:cardBackgroundColor="@color/white"
         app:cardElevation="10dp"
         android:layout_height="wrap_content">
         <LinearLayout
             android:layout_width="match_parent"
-            android:padding="20dp"
             android:orientation="vertical"
             android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                >
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="50dp"
+                    android:padding="1dp"
+                    android:id="@+id/userPhoto"
+                    app:civ_border_color="@color/black"
+                    app:civ_border_width="1dp"
+                    android:src="@drawable/user"
+                    android:layout_height="50dp"/>
     <TextView
         android:id="@+id/feedItemName"
         android:layout_width="wrap_content"
-        android:hint="jsncjancanc"
+        android:hint="..........."
+        android:textIsSelectable="true"
         android:layout_margin="5dp"
-        android:background="@drawable/otp_box"
-        android:textSize="25dp"
+        android:textSize="15dp"
         android:textStyle="bold"
         android:padding="8dp"
-        android:textColorHint="@color/white"
-        android:textColor="@color/white"
-        android:fontFamily="@font/advent_pro_medium"
+        android:textColorHint="@color/black"
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto_light"
         android:layout_height="wrap_content"/>
-        <ImageView
+            </LinearLayout>
+            <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
             android:id="@+id/feedItemImage"
-            android:layout_width="400dp"
-            android:src="@drawable/camera"
+            android:layout_width="300dp"
             android:scaleType="centerCrop"
-            android:layout_height="400dp"
+                android:layout_margin="15dp"
+            android:layout_height="300dp"
             android:layout_gravity="center"
             />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/timeStamp"
+                    android:layout_width="wrap_content"
+                    android:hint="........."
+                    android:textColorHint="@color/black"
+                    android:textSize="10dp"
+                    android:layout_marginStart="15dp"
+                    android:padding="8dp"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/advent_pro_medium"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
     <TextView
         android:id="@+id/feedProblemDescription"
         android:layout_width="wrap_content"
-        android:hint="ajknjAJANSA"
-        android:layout_margin="5dp"
-        android:textColorHint="@color/white"
-        android:background="@drawable/otp_box"
-        android:textSize="20dp"
+        android:hint="........."
+        android:textColorHint="@color/black"
+        android:textSize="10dp"
+        android:layout_marginStart="15dp"
         android:padding="8dp"
-        android:textColor="@color/white"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/black"
         android:fontFamily="@font/advent_pro_medium"
         android:layout_height="wrap_content"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </LinearLayout>

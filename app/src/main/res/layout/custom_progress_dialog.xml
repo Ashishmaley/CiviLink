@@ -4,8 +4,9 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="20dp"
+
     android:orientation="horizontal"
-    android:background="@drawable/otp_box"
+    android:background="@drawable/otp_boxcircle"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center">
     <com.airbnb.lottie.LottieAnimationView
@@ -19,6 +20,7 @@
         android:id="@+id/textViewMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:textSize="30dp"
         android:layout_gravity="center"
         android:text="Loading.."

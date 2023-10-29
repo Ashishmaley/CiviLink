@@ -8,7 +8,7 @@
     tools:context=".FeedFragment">
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feedReCycle"
-        android:paddingTop="55dp"
+        android:paddingTop="60dp"
         android:layout_width="match_parent"
         android:background="@color/white"
         tools:listitem="@layout/feed_item"

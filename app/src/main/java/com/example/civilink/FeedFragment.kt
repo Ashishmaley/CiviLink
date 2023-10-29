@@ -1,5 +1,6 @@
 package com.example.civilink
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.civilink.adapters.ReportDataAdapter
 import com.example.civilink.data.ReportData
+import com.example.civilink.data.ReportData1
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -18,8 +20,7 @@ import com.google.firebase.database.ValueEventListener
 class FeedFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var reportDataAdapter: ReportDataAdapter
-    private val reportDataList = mutableListOf<ReportData>()
-    private lateinit var databaseReference: DatabaseReference
+    private val reportDataList = mutableListOf<ReportData1>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -44,11 +45,14 @@ class FeedFragment : Fragment() {
         val userReportsRef = database.getReference("user_reports")
 
         userReportsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 for (userSnapshot in dataSnapshot.children) {
                     for (reportSnapshot in userSnapshot.children) {
-                        val reportData = reportSnapshot.getValue(ReportData::class.java)
+                        val reportId = reportSnapshot.key
+                        val reportData = reportSnapshot.getValue(ReportData1::class.java)
                         if (reportData != null) {
+                            reportData.reportId = reportId
                             reportDataList.add(reportData)
                         }
                     }

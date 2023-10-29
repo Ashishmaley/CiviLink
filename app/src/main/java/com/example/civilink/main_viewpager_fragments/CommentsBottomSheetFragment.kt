@@ -8,13 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import androidx.lifecycle.ViewModelProvider
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.civilink.R
 import com.example.civilink.adapters.CommentAdapter
 import com.example.civilink.data.Comment
-import com.example.civilink.data.models.ImageViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -27,18 +26,18 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var commentsRef: DatabaseReference
     private lateinit var currentUser: FirebaseUser
     private lateinit var commentsListener: ChildEventListener
-    private lateinit var imageViewModel: ImageViewModel
     private val commentsList = mutableListOf<Comment>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Initialize Firebase references and current user
         val database = FirebaseDatabase.getInstance()
-        imageViewModel = ViewModelProvider(requireActivity()).get(ImageViewModel::class.java)
         currentUser = FirebaseAuth.getInstance().currentUser!!
         commentsRef = database.reference.child("comments")
         commentsListener = createCommentsListener()
-        reportId = imageViewModel.reportId.toString()
+        reportId = tag ?: ""
+        if (reportId.isEmpty()) {
+            Toast.makeText(requireContext(),"Something went wrong.",Toast.LENGTH_SHORT).show()
+        }
         val commentPath = "comments/$reportId"
         commentsRef = database.reference.child(commentPath)
         commentsListener = createCommentsListener()
@@ -130,5 +129,16 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
         val commentPath = "comments/$reportId"
         commentsRef = FirebaseDatabase.getInstance().reference.child(commentPath)
         commentsRef.addChildEventListener(commentsListener)
+    }
+    companion object {
+        private const val REPORT_ID = "reportId"
+
+        fun newInstance(reportId: String): CommentsBottomSheetFragment {
+            val fragment = CommentsBottomSheetFragment()
+            val args = Bundle()
+            args.putString(REPORT_ID, reportId)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

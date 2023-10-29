@@ -290,8 +290,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                     val cameraUpdate = CameraUpdateFactory.newLatLngZoom(marker.position, 15.0f)
                     googleMap.animateCamera(cameraUpdate)
                     val bottomSheetFragment = MyBottomSheetFragment()
-                    bottomSheetFragment.show(childFragmentManager, imageUrl)
-                    Log.d("bundle", "$imageUrl")
+                    bottomSheetFragment.show(childFragmentManager, viewModel.reportId)
                 }
             }
 

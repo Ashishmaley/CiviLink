@@ -8,16 +8,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.civilink.R
 import com.example.civilink.data.models.ImageViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.squareup.picasso.Picasso
 import android.location.Geocoder
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.cardview.widget.CardView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -58,11 +58,14 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         val imageViewModel: ImageViewModel by activityViewModels()
         val imageView = view.findViewById<SubsamplingScaleImageView>(R.id.imageView)
         deleteButton = view.findViewById(R.id.deleteButton)
+        val likeButton = view.findViewById<ImageButton>(R.id.likeButton)
+        val like = view.findViewById<TextView>(R.id.like)
         val address = view.findViewById<TextView>(R.id.useId)
         val problemDescription = view.findViewById<TextView>(R.id.problem)
-        var ptitle = view.findViewById<TextView>(R.id.pTitle)
-        var like = view.findViewById<TextView>(R.id.like)
-        var time = view.findViewById<TextView>(R.id.timeAndDate)
+        val ptitle = view.findViewById<TextView>(R.id.pTitle)
+        val time = view.findViewById<TextView>(R.id.timeAndDate)
+        reportId = imageViewModel.reportId
+        userId = imageViewModel.userEmail
         val shimmer: Shimmer = Shimmer.ColorHighlightBuilder()
             .setBaseColor(R.color.white)
             .setHighlightColor(R.color.white)
@@ -73,29 +76,92 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout).startShimmer()
 
         ptitle.text = imageViewModel.spinnerSelectedItem
-        like.text = imageViewModel.intValue.toString()
+
+
+        val userLikesRef = FirebaseDatabase.getInstance().getReference("user_report_likes")
+        val userReportLikesRef = userLikesRef.child(imageViewModel.reportId!!)
+        var reportLikeRef = userReportLikesRef.child(imageViewModel.userEmail!!)
+
+        val usersWhoLikedRef = userLikesRef.child(imageViewModel.reportId!!)
+        usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                like.text = dataSnapshot.childrenCount.toString()
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle error if the data fetch is unsuccessful
+                Log.e("FirebaseError", "Error: ${databaseError.message}")
+            }
+        })
+
+
+        reportLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                likeButton.setImageResource(if (dataSnapshot.exists()) R.drawable.heart else R.drawable.like)
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle error if the data fetch is unsuccessful
+                Log.e("FirebaseError", "Error: ${databaseError.message}")
+            }
+        })
+
+        likeButton.setOnClickListener {
+            reportLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        reportLikeRef.removeValue() // Remove like
+                        likeButton.setImageResource(R.drawable.like)
+                        usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                like.text = dataSnapshot.childrenCount.toString()
+                            }
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                // Handle error if the data fetch is unsuccessful
+                                Log.e("FirebaseError", "Error: ${databaseError.message}")
+                            }
+                        })
+                    } else {
+                        reportLikeRef.setValue(true) // Add like
+                        likeButton.setImageResource(R.drawable.heart)
+                        usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                like.text = dataSnapshot.childrenCount.toString()
+                            }
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                // Handle error if the data fetch is unsuccessful
+                                Log.e("FirebaseError", "Error: ${databaseError.message}")
+                            }
+                        })
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("FirebaseError", "Error: ${databaseError.message}")
+                }
+            })
+        }
 
         val formattedTimestamp = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
             .format(imageViewModel.timestamp?.let { Date(it) })
         time.text = formattedTimestamp.toString()
 
-
-
-
-//        val commetCount = view.findViewById<TextView>(R.id.commentCount)
-
-
-
-
-
-
-
-
-
-
-        reportId = imageViewModel.reportId
-        userId = imageViewModel.userEmail
         getUserEmail(userId.toString())
+
+        val commentRef = FirebaseDatabase.getInstance().reference
+            .child("comments")
+            .child(reportId!!)
+
+        commentRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Get the count of children under the reportId node
+                val count = dataSnapshot.childrenCount
+                view.findViewById<TextView>(R.id.commentCount).text = count.toString()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle any errors
+                Log.e("FirebaseError", "Error: ${databaseError.message}")
+            }
+        })
 
         val imageUrl = imageViewModel.selectedImageUrl
 
@@ -131,6 +197,7 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
             onDeleteButtonClick()
         }
     }
+
     private fun getUserEmail(userId: String) {
         val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId)
 
@@ -160,6 +227,7 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
             "Address not found"
         }
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.let { bottomSheet ->
@@ -171,10 +239,10 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         val commentButton = view.findViewById<CardView>(R.id.commentButton)
         commentButton.setOnClickListener {
             val commentsBottomSheetFragment = CommentsBottomSheetFragment()
-            commentsBottomSheetFragment.show(childFragmentManager, commentsBottomSheetFragment.tag)
+            commentsBottomSheetFragment.show(childFragmentManager, reportId)
         }
-
     }
+
     private fun onDeleteButtonClick() {
         val reportId = imageViewModel.reportId
         val photoUrl = imageViewModel.selectedImageUrl // Provide the photoUrl here

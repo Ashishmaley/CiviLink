@@ -108,9 +108,8 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
                 if (snapshot.exists()) {
                     val userEmail = snapshot.child("emailId").getValue(String::class.java)
                     val userPhoto = snapshot.child("profileImage").getValue(String::class.java)
-
-                    userEmail?.let { userDetailMap[reportData.userId!!] = it }
-                    userPhoto?.let { userDetailMap["photo_${reportData.userId!!}"] = it }
+                    userEmail?.let { userDetailMap[reportData.userId] = it }
+                    userPhoto?.let { userDetailMap["photo_${reportData.userId}"] = it }
 
                     setUserDetailsToUI(holder, userEmail)
                 }
@@ -134,6 +133,13 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
         }
     }
 
+    fun updateData(newData: List<ReportData1>) {
+        val reportDataList = ArrayList<ReportData1>()
+        reportDataList.clear()
+        reportDataList.addAll(newData)
+        notifyDataSetChanged()
+    }
+
     // Inside your loadReportImage function
 
     private fun loadReportImage(holder: ViewHolder, reportData: ReportData1) {
@@ -147,7 +153,7 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
                     .error(R.drawable.handshakeappicon) // Set an error placeholder
             )
             .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache both original & resized image
-            .override(370, 370) // Specify the size if necessary
+            .override(700, 700) // Specify the size if necessary
             .into(object : CustomTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                     holder.binding.feedItemImage.setImage(ImageSource.bitmap(resource))

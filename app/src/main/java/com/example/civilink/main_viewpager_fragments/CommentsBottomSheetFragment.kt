@@ -104,6 +104,7 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
                     commentsList.add(it)
                     Log.d("CommentsBottomSheet", "Comment added: $it")
                     commentsAdapter.notifyDataSetChanged()
+
                 }
             }
 

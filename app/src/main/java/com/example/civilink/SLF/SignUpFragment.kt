@@ -1,5 +1,6 @@
 package com.example.civilink.SLF
 
+import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
@@ -89,6 +90,12 @@ class SignUpFragment : Fragment() {
             showCustomProgressDialog("Loading...")
             signInWithGoogle()
         }
+        val animator1 = ObjectAnimator.ofFloat(binding.googleSignIn,"alpha", 0.0f, 1.0f)
+        animator1.duration = 1000 // Animation duration in milliseconds
+        animator1.start()
+        val animator2 = ObjectAnimator.ofFloat(binding.cirLoginButton,"alpha", 0.0f, 1.0f)
+        animator2.duration = 1000 // Animation duration in milliseconds
+        animator2.start()
 
         binding.cirLoginButton.setOnClickListener {
             val email = binding.editTextTextEmailAddress2.text.toString()

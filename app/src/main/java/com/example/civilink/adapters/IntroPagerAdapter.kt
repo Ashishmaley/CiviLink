@@ -23,7 +23,7 @@ class IntroPagerAdapter(private val context: Context): PagerAdapter() {
         R.raw.mobile,
         R.raw.newsun
     )
-    val textArr = arrayOf("Welcome!","In a world filled with civic challenges, our mission is to empower communities through technology. We present to you an innovative solution that revolutionizes the way we address civic issues such as water supply disruptions , water quality issues in ponds/lakes, urban flooding, and drainage problem, and more they can submit civil problem like road, garbage etc. : \"Civic Report.","Civic Report aims to bridge the gap between citizens and government, offering benefits such as effortless reporting, real-time issue tracking, and enhanced community engagement. Together, we can build stronger, more responsive communities.\n")
+    val textArr = arrayOf("Welcome!","In a world filled with civic challenges, our mission is to empower communities through technology. We present to you an innovative solution that revolutionizes the way we address civic issues such as water supply disruptions , water quality issues in ponds/lakes, urban flooding, and drainage problem, and more they can submit civil problem like road, garbage etc.\n : \"Civic Report\"","Civic Report aims to bridge the gap between citizens and government, offering benefits such as effortless reporting, real-time issue tracking, and enhanced community engagement. Together, we can build stronger, more responsive communities.\n")
 
     override fun getCount(): Int = pageAmin.size
 

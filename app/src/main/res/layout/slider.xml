@@ -32,7 +32,7 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="center"
-            android:layout_marginTop="150dp"
+            android:layout_marginTop="80dp"
             app:lottie_autoPlay="true"
             />
         <androidx.cardview.widget.CardView
@@ -41,7 +41,7 @@
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
             android:layout_marginBottom="54dp"
-            app:cardBackgroundColor="@color/black"
+            app:cardBackgroundColor="@color/app_bg"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
             android:layout_gravity="center"
@@ -94,7 +94,7 @@
             android:text="OK"
             android:elevation="10dp"
             android:textStyle="bold"
-            android:textColor="#FAF8F8"
+            android:textColor="#FBFBFB"
             android:backgroundTint="@color/app_bg"
             android:visibility="visible" />
     </androidx.cardview.widget.CardView>

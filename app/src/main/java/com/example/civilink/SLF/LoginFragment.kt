@@ -1,5 +1,6 @@
 package com.example.civilink.SLF
 
+import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
@@ -48,6 +49,11 @@ class LoginFragment : Fragment() {
         animationView.playAnimation()
         fireBaseAuth = FirebaseAuth.getInstance()
         val inflater = requireActivity().layoutInflater
+
+        val animator2 = ObjectAnimator.ofFloat(binding.button,"alpha", 0.0f, 1.0f)
+        animator2.duration = 1000 // Animation duration in milliseconds
+        animator2.start()
+
         binding.button.setOnClickListener {
             val email = binding.editTextTextEmailAddress2.text.toString()
             val pass = binding.editTextNumberPassword.text.toString()

@@ -20,7 +20,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_marginTop="20dp"
-        app:cardBackgroundColor="#32767474"
+        app:cardBackgroundColor="#328DC6FF"
         app:cardCornerRadius="10dp"
         android:padding="20dp"
         app:cardElevation="0dp"
@@ -35,6 +35,7 @@
         android:id="@+id/mapToggleImageView"
         android:layout_width="37dp"
         android:layout_height="37dp"
+            android:visibility="gone"
         android:padding="5dp"
             android:background="@drawable/button_selector"
             android:layout_margin="2dp"
@@ -42,8 +43,10 @@
         android:elevation="15dp"
         />
             <View
+                android:id="@+id/viewBeak"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:visibility="gone"
                 android:background="@color/white"/>
 
             <ImageButton
@@ -52,6 +55,7 @@
                 android:padding="5dp"
                 android:src="@drawable/direction"
                 android:layout_height="37dp"
+                android:visibility="gone"
                 android:scaleType="centerCrop"
                 android:background="@drawable/button_selector"
                 android:layout_margin="2dp"
@@ -69,11 +73,29 @@
                 android:background="@drawable/toggle_button_selector"
                 android:checked="false"
                 />
+            <View
+                android:id="@+id/viewBeak1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="gone"
+                android:background="@color/white"/>
+
+            <ImageButton
+                android:id="@+id/problemSolvedBt"
+                android:layout_width="37dp"
+                android:fadingEdge="vertical"
+                android:layout_height="37dp"
+                android:visibility="gone"
+                android:layout_margin="5dp"
+                android:background="@drawable/button_selector"
+                android:src="@drawable/solved"
+                android:scaleType="centerCrop"
+                />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
-        app:cardBackgroundColor="#32767474"
+        app:cardBackgroundColor="#328DC6FF"
         android:layout_marginTop="210dp"
         android:layout_gravity="center"
         app:cardCornerRadius="10dp"
@@ -85,9 +107,10 @@
         android:layout_width="37dp"
         android:fadingEdge="vertical"
         android:layout_height="37dp"
+        android:visibility="gone"
         android:layout_margin="5dp"
         android:background="@drawable/button_selector"
-        android:src="@drawable/my_location_icon"
+        android:src="@drawable/message"
         android:scaleType="centerCrop"
         />
     </androidx.cardview.widget.CardView>

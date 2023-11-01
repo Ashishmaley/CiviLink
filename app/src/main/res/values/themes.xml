@@ -13,4 +13,15 @@
          <!-- Customize text color -->
         <!-- Add more attributes to customize the dialog -->
     </style>
+    <style name="PopupAnimation" parent="@android:style/Animation">
+        <item name="android:windowEnterAnimation">@anim/your_enter_anim</item>
+        <item name="android:windowExitAnimation">@anim/your_exit_anim</item>
+    </style>
+    <style name="CustomSpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/custom_spinner_background</item>
+        <item name="android:dropDownSelector">@drawable/otp_boxcircle1</item>
+        <item name="android:popupBackground">#FDFCFC</item>
+        <!-- Add other attributes as per your requirement -->
+    </style>
+
 </resources>

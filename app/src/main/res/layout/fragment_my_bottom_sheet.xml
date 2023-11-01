@@ -319,9 +319,10 @@
             android:textStyle="bold" />
         <Button
             android:layout_width="0dp"
+            android:id="@+id/problemSolved"
             android:layout_height="wrap_content"
             android:text="Solved"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="#A6303030"
             android:layout_weight="1"
             android:layout_margin="5dp"
             android:layout_marginBottom="10dp"

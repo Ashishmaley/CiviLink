@@ -3,30 +3,36 @@ package com.example.civilink.adapters
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.example.civilink.R
+import com.example.civilink.ZoomableImageView
 import com.example.civilink.data.ReportData1
 import com.example.civilink.databinding.FeedItemBinding
 import com.example.civilink.main_viewpager_fragments.CommentsBottomSheetFragment
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import io.github.glailton.expandabletextview.EXPAND_TYPE_DEFAULT
-import io.github.glailton.expandabletextview.EXPAND_TYPE_LAYOUT
-import io.github.glailton.expandabletextview.EXPAND_TYPE_POPUP
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -143,26 +149,48 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
     // Inside your loadReportImage function
 
     private fun loadReportImage(holder: ViewHolder, reportData: ReportData1) {
+        val shimmerViewContainer = holder.binding.shimmerViewContainer
+        val feedItemImage = holder.binding.feedItemImage
+
+        shimmerViewContainer.startShimmer()
+
         Glide.with(context)
-            .asBitmap()
             .load(reportData.photoUrl)
             .apply(
                 RequestOptions()
                     .dontTransform()
-                    .placeholder(R.drawable.handshakeappicon) // Set a placeholder
-                    .error(R.drawable.handshakeappicon) // Set an error placeholder
+                    .placeholder(R.drawable.coverimage)
+                    .error(R.drawable.warning)
             )
-            .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache both original & resized image
-            .override(700, 700) // Specify the size if necessary
-            .into(object : CustomTarget<Bitmap>() {
-                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    holder.binding.feedItemImage.setImage(ImageSource.bitmap(resource))
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .listener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    shimmerViewContainer.stopShimmer()
+                    shimmerViewContainer.visibility = View.GONE
+                    return false
                 }
 
-                override fun onLoadCleared(placeholder: Drawable?) {
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    // Stop shimmer when the image is loaded successfully
+                    shimmerViewContainer.stopShimmer()
+                    shimmerViewContainer.hideShimmer()
+                    return false
                 }
             })
+            .into(feedItemImage)
     }
+
 
 
     private fun manageLikeFunctionality(holder: ViewHolder, reportData: ReportData1) {
@@ -206,7 +234,6 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
                                 like.text = dataSnapshot.childrenCount.toString()
                             }
                             override fun onCancelled(databaseError: DatabaseError) {
-                                // Handle error if the data fetch is unsuccessful
                                 Log.e("FirebaseError", "Error: ${databaseError.message}")
                             }
                         })
@@ -218,7 +245,6 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
                                 like.text = dataSnapshot.childrenCount.toString()
                             }
                             override fun onCancelled(databaseError: DatabaseError) {
-                                // Handle error if the data fetch is unsuccessful
                                 Log.e("FirebaseError", "Error: ${databaseError.message}")
                             }
                         })

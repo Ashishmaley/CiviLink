@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 
 // In your MainActivity
 class MainActivity : AppCompatActivity() {
@@ -50,6 +52,7 @@ class MainActivity : AppCompatActivity() {
             updateButtonBackground(destination.id)
         }
     }
+
     fun navigateToSignUp(view: View) {
         btnSignUp.visibility = View.VISIBLE
         btnLogin.visibility = View.VISIBLE

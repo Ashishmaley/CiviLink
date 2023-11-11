@@ -200,6 +200,11 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
             val longitude = imageViewModel.longitude ?: 0.0
             address.text = getAddressFromLocation(latitude, longitude)
             problemDescription.text = imageViewModel.problemDescription
+
+            val shimmerViewContainer = view.findViewById<ShimmerFrameLayout>(R.id.shimmer_layout)
+
+            shimmerViewContainer.startShimmer()
+
             Glide.with(this)
                 .asBitmap()
                 .load(imageUrl)
@@ -207,6 +212,8 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
                 .into(object : CustomTarget<Bitmap>() {
                     override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                         imageView.setImage(ImageSource.bitmap(resource))
+                        shimmerViewContainer.stopShimmer()
+                        shimmerViewContainer.hideShimmer()
                     }
 
                     override fun onLoadCleared(placeholder: Drawable?) {
@@ -496,15 +503,12 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         dialog!!.show()
     }
     private fun showCustomSeekBarNotification(animationResId: Int, message: String) {
-        // Inflate the custom SeekBar layout
         val inflater = LayoutInflater.from(requireContext())
         val customSeekBarView = inflater.inflate(R.layout.custom_seekbar_layout1, null)
 
-        // Customize the layout elements
         val lottieAnimationView = customSeekBarView.findViewById<LottieAnimationView>(R.id.lottieAnimationView)
         val textViewMessage = customSeekBarView.findViewById<TextView>(R.id.textViewMessage)
 
-        // Set Lottie animation resource
         lottieAnimationView.setAnimation(animationResId) // Replace with your animation resource
         lottieAnimationView.playAnimation()
 

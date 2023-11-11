@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.airbnb.lottie.LottieAnimationView
 import com.example.civilink.adapters.ReportDataAdapter
 import com.example.civilink.data.ReportData1
@@ -41,6 +42,8 @@ class FeedFragment : Fragment() {
     private lateinit var userLocation: Location
     private val kilometerRanges = listOf(1,5,10, 50, 100, 300, 500, 1000, 10000, 30000, 50000, 100000)
     private val reportDataMap = mutableMapOf<Int, MutableList<ReportData1>>()
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +54,12 @@ class FeedFragment : Fragment() {
         reportDataAdapter = ReportDataAdapter(reportDataList, requireContext())
         recyclerView.adapter = reportDataAdapter
         recyclerView.layoutManager = LinearLayoutManager(context)
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setOnRefreshListener {
+            reportDataMap.clear()
+            fetchUserLocation()
+            swipeRefreshLayout.isRefreshing = false // Stop the spinner
+        }
 
         val button = view.findViewById<ImageButton>(R.id.filterButton)
 
@@ -90,9 +99,6 @@ class FeedFragment : Fragment() {
             // Show the popup at the center of the screen
             popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
         }
-
-
-
         return view
     }
 
@@ -105,8 +111,10 @@ class FeedFragment : Fragment() {
         reportDataList = reportDataMap[rangeIn] ?: mutableListOf()
         reportDataAdapter = ReportDataAdapter(reportDataList, requireContext())
         recyclerView.adapter = reportDataAdapter
+        if(swipeRefreshLayout.isRefreshing){
+            swipeRefreshLayout.isRefreshing=false
+        }
     }
-
 
     private fun fetchUserLocation() {
         if (ContextCompat.checkSelfPermission(
@@ -169,13 +177,16 @@ class FeedFragment : Fragment() {
                 reportDataList = reportDataMap[rangeIn] ?: mutableListOf()
                 reportDataAdapter = ReportDataAdapter(reportDataList, requireContext())
                 recyclerView.adapter = reportDataAdapter
+
             }
 
             override fun onCancelled(error: DatabaseError) {
                 // Handle onCancelled event
             }
         })
-
+        if(swipeRefreshLayout.isRefreshing){
+            swipeRefreshLayout.isRefreshing=false
+        }
     }
 
     companion object {

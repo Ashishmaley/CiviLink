@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -42,11 +43,14 @@ import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListener{
 
@@ -74,8 +78,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_map, container, false)
         requestPermissions()
+        val view = inflater.inflate(R.layout.fragment_map, container, false)
         mapView = view.findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
@@ -211,8 +215,63 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                 }
             }
             setupDatabaseListener()
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    Log.d("FCM Token....", "Token: $token")
+                    getLastLocation(token)
+                } else {
+                    Log.e("FCM Token", "Error getting FCM token", task.exception)
+                }
+            }
         }
     }
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation(fcmToken: String?) {
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    // Location is successfully obtained
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+                    Log.d("Location", "Latitude: $latitude, Longitude: $longitude")
+
+                    // Save the FCM token and location to Firebase Realtime Database
+                    saveDataToFirebaseDatabase(fcmToken, latitude, longitude)
+                } else {
+                    // Handle the case where the last known location is not available
+                    Log.e("Location", "Last known location is not available")
+                }
+            }
+            .addOnFailureListener { e ->
+                // Handle the failure to get the last known location
+                Log.e("Location", "Error getting last known location", e)
+            }
+    }
+
+    private fun saveDataToFirebaseDatabase(fcmToken: String?, latitude: Double, longitude: Double) {
+        if (fcmToken != null) {
+            val currentUserUid = FirebaseAuth.getInstance().uid // Replace with the actual user UID
+            val database = FirebaseDatabase.getInstance()
+            val tokensRef = database.getReference("fcmTokens")
+
+            // Save the FCM token and location to the database under the user's UID
+            tokensRef.child(currentUserUid!!).setValue(
+                mapOf(
+                    "token" to fcmToken,
+                    "latitude" to latitude,
+                    "longitude" to longitude
+                )
+            )
+                .addOnSuccessListener {
+                    Log.d("Data", "Data saved to Firebase Realtime Database successfully")
+                }
+                .addOnFailureListener { error ->
+                    Log.e("Data", "Error saving data to Firebase Realtime Database", error)
+                }
+        }
+    }
+
     @SuppressLint("PotentialBehaviorOverride")
     private fun fetchLocationDataFromFirebase1(gMap: GoogleMap) {
         if (this::googleMap.isInitialized) {
@@ -334,6 +393,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
             coarseLocationPermission
         ) == PackageManager.PERMISSION_GRANTED)
     }
+
     private fun removeHotspotCircles() {
         for (circle in hotspotCircles) {
             circle.remove()
@@ -379,7 +439,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraIdleListen
                 showCustomLottieToast(R.raw.networkerror, "Check Internet connection")
             }
         })
-
         googleMap.setOnMarkerClickListener { marker ->
             val tag = marker.tag as String?
             Log.d("map", "$tag")

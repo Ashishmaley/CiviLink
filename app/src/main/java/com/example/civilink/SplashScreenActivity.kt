@@ -27,6 +27,7 @@ import com.google.firebase.storage.FirebaseStorage
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import com.google.firebase.auth.GetTokenResult
 
 class SplashScreenActivity : AppCompatActivity() {
 
@@ -67,7 +68,18 @@ class SplashScreenActivity : AppCompatActivity() {
                 if (appOpenedBefore) {
                 val currentUser = auth.currentUser
                 if (currentUser != null && currentUser.isEmailVerified) {
+                        currentUser.getIdToken(true).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val tokenResult: GetTokenResult? = task.result
+                                val isDisabled = tokenResult?.claims?.get("disabled") as? Boolean ?: false
+                                if (isDisabled) {
+                                    showCustomLottieToast(R.raw.errorlottie, "Account is disabled.")
+                                    signOut()
+                                }
+                            }
+                        }
                     val uid = auth.currentUser!!.uid
+
                     database!!.reference
                         .child("users")
                         .child(uid)
@@ -195,6 +207,12 @@ class SplashScreenActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+    private fun signOut() {
+        auth.signOut()
+
+        startActivity(Intent(this@SplashScreenActivity, MainActivity::class.java))
+        finish()
     }
 }
 

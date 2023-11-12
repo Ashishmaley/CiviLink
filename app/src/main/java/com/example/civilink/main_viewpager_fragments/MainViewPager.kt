@@ -1,12 +1,16 @@
 package com.example.civilink.main_viewpager_fragments
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Window
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.example.civilink.FeedFragment
 import com.example.civilink.R
@@ -24,10 +28,12 @@ import de.hdodenhof.circleimageview.CircleImageView
 
 class MainViewPager : AppCompatActivity() {
     private var isSwipingEnabled = true
+    private val LOCATION_PERMISSION_REQUEST_CODE = 123
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_viewpager)
+        requestPermissions()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val window: Window = window
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -119,6 +125,27 @@ class MainViewPager : AppCompatActivity() {
         // Check if the device has a transparent status bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.statusBarColor = resources.getColor(colorResId, theme)
+        }
+    }
+    private fun requestPermissions() {
+        val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
+        val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
+        val cameraPermission = Manifest.permission.CAMERA
+
+        val fineLocationPermissionGranted =
+            ContextCompat.checkSelfPermission(this, fineLocationPermission) == PackageManager.PERMISSION_GRANTED
+        val coarseLocationPermissionGranted =
+            ContextCompat.checkSelfPermission(this, coarseLocationPermission) == PackageManager.PERMISSION_GRANTED
+        val cameraPermissionGranted =
+            ContextCompat.checkSelfPermission(this, cameraPermission) == PackageManager.PERMISSION_GRANTED
+
+        if (!fineLocationPermissionGranted || !coarseLocationPermissionGranted || !cameraPermissionGranted) {
+            // Request permissions
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(fineLocationPermission, coarseLocationPermission, cameraPermission),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
         }
     }
 

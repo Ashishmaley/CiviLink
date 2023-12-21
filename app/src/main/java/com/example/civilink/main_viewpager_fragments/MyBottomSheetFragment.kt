@@ -3,7 +3,6 @@ package  com.example.civilink.main_viewpager_fragments
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -46,12 +45,18 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import id.zelory.compressor.Compressor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class MyBottomSheetFragment : BottomSheetDialogFragment() {
+    private var imageUri: Uri? =null
     private var userId : String? = null
     private lateinit var imageViewModel: ImageViewModel
     private var reportId: String? = null
@@ -240,7 +245,7 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         problemSolved.setOnClickListener {
             val reportLatitude = imageViewModel.latitude
             val reportLongitude = imageViewModel.longitude
-            val locationThreshold = 0.0001 // Adjust this threshold according to your requirements
+            val locationThreshold = 0.0010 // Adjust this threshold according to your requirements
 
             if (isSameLocation(reportLatitude!!, reportLongitude!!, userCurrentLatitude, userCurrentLongitude, locationThreshold)) {
                 dispatchTakePictureIntent()
@@ -346,8 +351,10 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             showCustomProgressDialog("Loading..")
 
-            val imageUri = tempImageFile?.let { FileProvider.getUriForFile(requireContext(), "com.example.civilink.fileprovider", it) }
 
+
+            imageUri = tempImageFile?.let { FileProvider.getUriForFile(requireContext(), "com.example.civilink.fileprovider", it) }
+            compressAndSetImage(imageUri)
             val storageRef = FirebaseStorage.getInstance().getReference().child("solvedReport/${reportId}.jpg")
 
             // Uploading the image using the URI
@@ -397,6 +404,30 @@ class MyBottomSheetFragment : BottomSheetDialogFragment() {
             Toast.makeText(requireContext(), "Failed to mark the report as Solved", Toast.LENGTH_SHORT).show()
         }
     }
+    private fun compressAndSetImage(uri: Uri?) {
+        uri?.let { selectedUri ->
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    val sourceFile = createTempFileFromUri(selectedUri)
+                    val compressedFile = Compressor.compress(requireContext(), sourceFile)
+                    imageUri = Uri.fromFile(compressedFile)
+                } catch (e: IOException) {
+                    Log.e("ImageCompression", "Error compressing image: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+
+    private fun createTempFileFromUri(uri: Uri): File {
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+        val tempFile = createTempFile("temp_image", null, requireActivity().cacheDir)
+        tempFile.outputStream().use { outputStream ->
+            inputStream?.copyTo(outputStream)
+        }
+        return tempFile
+    }
+
 
 
     private fun setupDeleteButton() {

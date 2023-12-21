@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -23,6 +24,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import id.zelory.compressor.Compressor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.IOException
 
 @Suppress("DEPRECATION")
 
@@ -121,18 +128,54 @@ class ProfileActivity : AppCompatActivity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode==17)
-        {
-            if(data != null)
-            {
-                selectedImage=data.data
-
-                profileImage!!.setImageURI(selectedImage)
+        if (requestCode == 17) {
+            if (data != null) {
+                selectedImage = data.data
+                compressAndSetImage(selectedImage)
+            } else {
+                showCustomSeekBarNotification(R.raw.verify, "Select an image")
             }
-            else
-                showCustomSeekBarNotification(R.raw.verify,"select image")
         }
     }
+
+    private fun compressAndSetImage(uri: Uri?) {
+        uri?.let { selectedUri ->
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    val sourceFile = createTempFileFromUri(selectedUri)
+                    val compressedFile = Compressor.compress(this@ProfileActivity, sourceFile)
+                    selectedImage = Uri.fromFile(compressedFile)
+                    runOnUiThread {
+                        setCompressedImage(selectedImage)
+                    }
+                } catch (e: IOException) {
+                    Log.e("ImageCompression", "Error compressing image: ${e.message}", e)
+                    runOnUiThread {
+                        showCustomSeekBarNotification(R.raw.verify, "Error compressing image: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setCompressedImage(uri: Uri?) {
+        // Ensure selectedImage is not null before setting the image
+        uri?.let { imageUri ->
+            profileImage!!.setImageURI(imageUri)
+        }
+    }
+
+
+    private fun createTempFileFromUri(uri: Uri): File {
+        val inputStream = contentResolver.openInputStream(uri)
+        val tempFile = createTempFile("temp_image", null, cacheDir)
+        tempFile.outputStream().use { outputStream ->
+            inputStream?.copyTo(outputStream)
+        }
+        return tempFile
+    }
+
+
     override fun onStart() {
         super.onStart()
 

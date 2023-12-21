@@ -31,7 +31,13 @@ import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import android.location.Geocoder
+import androidx.core.net.toUri
+import id.zelory.compressor.Compressor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
 import java.util.*
 
@@ -69,6 +75,7 @@ class ProblemStatmentFragment : Fragment() {
         }
         sharedViewModel.imageUri.observe(requireActivity()) { uri ->
             photoUriString = uri ?: ""
+            compressImage(uri)
         }
 
         val options = arrayOf(
@@ -110,6 +117,18 @@ class ProblemStatmentFragment : Fragment() {
             }
         }
     }
+    private fun compressImage(uriString: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val uri = Uri.parse(uriString)
+                val compressedFile = Compressor.compress(requireContext(), File(uri.path))
+                photoUriString = compressedFile.toUri().toString()
+            } catch (e: IOException) {
+                Log.e("ImageCompression", "Error compressing image: ${e.message}", e)
+            }
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -119,7 +138,7 @@ class ProblemStatmentFragment : Fragment() {
     private fun uploadPhotoToFirebase(photoUri: String, onPhotoUploaded: (String) -> Unit) {
         val storageRef = FirebaseStorage.getInstance().reference
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        val reportId = UUID.randomUUID().toString()
+        val reportId = "${System.currentTimeMillis()}|${UUID.randomUUID()}"
 
         val uniquePhotoId =
             "${userId}_${reportId}_${System.currentTimeMillis()}.jpg" // Unique photo ID
@@ -133,6 +152,7 @@ class ProblemStatmentFragment : Fragment() {
                 onPhotoUploaded(photoUrl)
             }
         }.addOnFailureListener {
+            dialog?.dismiss()
             Toast.makeText(requireContext(), "Failed to upload photo", Toast.LENGTH_SHORT).show()
         }
     }

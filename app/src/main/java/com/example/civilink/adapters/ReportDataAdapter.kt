@@ -28,6 +28,7 @@ import com.example.civilink.databinding.FeedItemBinding
 import com.example.civilink.main_viewpager_fragments.CommentsBottomSheetFragment
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -198,63 +199,75 @@ class ReportDataAdapter(private val reportDataList: List<ReportData1>, private v
         val like = holder.binding.like
         val userLikesRef = FirebaseDatabase.getInstance().getReference("user_report_likes")
         val userReportLikesRef = userLikesRef.child(reportData.reportId!!)
-        var reportLikeRef = userReportLikesRef.child(reportData.userId!!)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val currentUserId = currentUser?.uid
 
-        val usersWhoLikedRef = userLikesRef.child(reportData.reportId!!)
-        usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                like.text = dataSnapshot.childrenCount.toString()
-            }
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Handle error if the data fetch is unsuccessful
-                Log.e("FirebaseError", "Error: ${databaseError.message}")
-            }
-        })
-
-
-        reportLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                likeButton.setImageResource(if (dataSnapshot.exists()) R.drawable.heart else R.drawable.like)
-            }
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Handle error if the data fetch is unsuccessful
-                Log.e("FirebaseError", "Error: ${databaseError.message}")
-            }
-        })
-
-
-        likeButton.setOnClickListener {
-            reportLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        if (currentUserId != null) {
+            val reportLikeRef = userReportLikesRef.child(currentUserId)
+            val usersWhoLikedRef = userLikesRef.child(reportData.reportId!!)
+            usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        reportLikeRef.removeValue() // Remove like
-                        likeButton.setImageResource(R.drawable.like)
-                        usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                like.text = dataSnapshot.childrenCount.toString()
-                            }
-                            override fun onCancelled(databaseError: DatabaseError) {
-                                Log.e("FirebaseError", "Error: ${databaseError.message}")
-                            }
-                        })
-                    } else {
-                        reportLikeRef.setValue(true) // Add like
-                        likeButton.setImageResource(R.drawable.heart)
-                        usersWhoLikedRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                like.text = dataSnapshot.childrenCount.toString()
-                            }
-                            override fun onCancelled(databaseError: DatabaseError) {
-                                Log.e("FirebaseError", "Error: ${databaseError.message}")
-                            }
-                        })
-                    }
+                    like.text = dataSnapshot.childrenCount.toString()
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle error if the data fetch is unsuccessful
                     Log.e("FirebaseError", "Error: ${databaseError.message}")
                 }
             })
+
+
+            reportLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    likeButton.setImageResource(if (dataSnapshot.exists()) R.drawable.heart else R.drawable.like)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle error if the data fetch is unsuccessful
+                    Log.e("FirebaseError", "Error: ${databaseError.message}")
+                }
+            })
+
+
+            likeButton.setOnClickListener {
+                reportLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            reportLikeRef.removeValue() // Remove like
+                            likeButton.setImageResource(R.drawable.like)
+                            usersWhoLikedRef.addListenerForSingleValueEvent(object :
+                                ValueEventListener {
+                                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                    like.text = dataSnapshot.childrenCount.toString()
+                                }
+
+                                override fun onCancelled(databaseError: DatabaseError) {
+                                    // Handle error if the data fetch is unsuccessful
+                                    Log.e("FirebaseError", "Error: ${databaseError.message}")
+                                }
+                            })
+                        } else {
+                            reportLikeRef.setValue(true) // Add like
+                            likeButton.setImageResource(R.drawable.heart)
+                            usersWhoLikedRef.addListenerForSingleValueEvent(object :
+                                ValueEventListener {
+                                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                    like.text = dataSnapshot.childrenCount.toString()
+                                }
+
+                                override fun onCancelled(databaseError: DatabaseError) {
+                                    // Handle error if the data fetch is unsuccessful
+                                    Log.e("FirebaseError", "Error: ${databaseError.message}")
+                                }
+                            })
+                        }
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        Log.e("FirebaseError", "Error: ${databaseError.message}")
+                    }
+                })
+            }
         }
     }
 

@@ -15,11 +15,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
-import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.example.civilink.ProfileActivity
 import com.example.civilink.R
+import com.example.civilink.data.GoogleApiClientManager
 import com.example.civilink.data.User
 import com.example.civilink.databinding.FragmentSignUpBinding
+import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -50,7 +51,8 @@ class SignUpFragment : Fragment() {
     private lateinit var googleApiClient: GoogleApiClient
     private val RC_SIGN_IN = 9001 // Request code for Google Sign-In
     private var dialog: Dialog? = null
-    private var googleSignInClient: GoogleSignInClient? = null
+
+
 
     private val PASSWORD_PATTERN: Regex =
         Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@$!%*?&])[A-Za-z\\d$@$!%*?&]{8,}")
@@ -68,23 +70,15 @@ class SignUpFragment : Fragment() {
         val animationView: LottieAnimationView = binding.ani
         navController = findNavController()
         animationView.playAnimation()
+
         database = FirebaseDatabase.getInstance()
         storage = FirebaseStorage.getInstance()
         auth = FirebaseAuth.getInstance()
         fireBaseAuth = FirebaseAuth.getInstance()
 
-        if (googleSignInClient == null) {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build()
+        val googleApiClientManager = GoogleApiClientManager.getInstance(requireContext())
+        googleApiClient = googleApiClientManager.getGoogleApiClient()
 
-            googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
-            googleApiClient = GoogleApiClient.Builder(requireContext())
-                .enableAutoManage(requireActivity()) {}
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build()
-        }
 
         binding.googleSignIn.setOnClickListener {
             showCustomProgressDialog("Loading...")

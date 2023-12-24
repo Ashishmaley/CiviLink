@@ -9,88 +9,87 @@
         android:layout_height="match_parent"
         android:background="@drawable/mainbackground"
         android:orientation="vertical">
-    <LinearLayout
-        android:id="@+id/customNavBar"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:gravity="center"
-        android:padding="10dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-        <TextView
-            android:id="@+id/forgotText"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:textColor="#F1F2F4"
-            android:fontFamily="@font/advent_pro_medium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:visibility="gone"
-            android:layout_marginBottom="8dp"
+        <LinearLayout
+            android:id="@+id/customNavBar"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
             android:gravity="center"
-            android:layout_gravity="center"
-            android:text="@string/title_activity_forgot_password" />
-        <Button
-            android:id="@+id/btnSignUp"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:textStyle="bold"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="Sign Up"
-            android:fontFamily="@font/advent_pro_medium"
-            android:textSize="20sp"
-            android:background="#00000000"
-            android:onClick="navigateToSignUp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnLogin"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:background="#80FFFFFF" />
-
-        <Button
-            android:id="@+id/btnLogin"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Login"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:fontFamily="@font/advent_pro_medium"
-            android:textSize="20sp"
-            android:background="#00FFFFFF"
-            android:onClick="navigateToLogin"
-            app:layout_constraintStart_toEndOf="@+id/btnSignUp"
+            android:padding="10dp"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <TextView
+                android:id="@+id/forgotText"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#F1F2F4"
+                android:fontFamily="@font/advent_pro_medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="@string/title_activity_forgot_password" />
+            <Button
+                android:id="@+id/btnSignUp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="Sign Up"
+                android:fontFamily="@font/advent_pro_medium"
+                android:textSize="20sp"
+                android:background="#00000000"
+                android:onClick="navigateToSignUp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnLogin"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:background="#80FFFFFF" />
+
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:fontFamily="@font/advent_pro_medium"
+                android:textSize="20sp"
+                android:background="#00FFFFFF"
+                android:onClick="navigateToLogin"
+                app:layout_constraintStart_toEndOf="@+id/btnSignUp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </LinearLayout>
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragmentContainerView"
+                android:name="androidx.navigation.fragment.NavHostFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:defaultNavHost="true"
+                app:layout_constraintBottom_toBottomOf="@+id/customNavBar"
+                app:layout_constraintEnd_toEndOf="@+id/customNavBar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:navGraph="@navigation/nav_graph" />
+        </androidx.core.widget.NestedScrollView>
 
     </LinearLayout>
-<androidx.core.widget.NestedScrollView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerView"
-        android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:defaultNavHost="true"
-        app:layout_constraintBottom_toBottomOf="@+id/customNavBar"
-        app:layout_constraintEnd_toEndOf="@+id/customNavBar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navGraph="@navigation/nav_graph" />
-</androidx.core.widget.NestedScrollView>
-
-    </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

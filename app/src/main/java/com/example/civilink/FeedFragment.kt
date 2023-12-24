@@ -193,7 +193,6 @@ class FeedFragment : Fragment() {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
     }
     private fun showCustomSeekBarNotification(animationResId: Int, message: String) {
-        // Inflate the custom SeekBar layout
         val inflater = LayoutInflater.from(requireContext())
         val customSeekBarView = inflater.inflate(R.layout.custom_seekbar_layout1, null)
 
@@ -201,22 +200,17 @@ class FeedFragment : Fragment() {
         val lottieAnimationView = customSeekBarView.findViewById<LottieAnimationView>(R.id.lottieAnimationView)
         val textViewMessage = customSeekBarView.findViewById<TextView>(R.id.textViewMessage)
 
-        // Set Lottie animation resource
-        lottieAnimationView.setAnimation(animationResId) // Replace with your animation resource
+        lottieAnimationView.setAnimation(animationResId)
         lottieAnimationView.playAnimation()
 
-        // Set the message
         textViewMessage.text = message
 
-        // Use a Dialog to display the custom SeekBar notification
         val customSeekBarDialog = Dialog(requireContext())
         customSeekBarDialog.setContentView(customSeekBarView)
 
-        // Optional: Set dialog properties (e.g., background, dimensions, etc.)
         customSeekBarDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         customSeekBarDialog.window?.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        // Show the custom SeekBar notification
         customSeekBarDialog.show()
     }
 }

@@ -3,6 +3,7 @@ package com.example.civilink.SLF
 import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,16 +12,27 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import com.airbnb.lottie.LottieAnimationView
 import com.example.civilink.main_viewpager_fragments.MainViewPager
 import com.example.civilink.ProfileActivity
 import com.example.civilink.R
+import com.example.civilink.data.GoogleApiClientManager
+import com.example.civilink.data.User
 import com.example.civilink.databinding.FragmentLoginBinding
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -30,6 +42,12 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
     private lateinit var fireBaseAuth: FirebaseAuth
+    private var dialog: Dialog? = null
+    private var storage: FirebaseStorage? = null
+    private var auth: FirebaseAuth? = null
+    private var database: FirebaseDatabase? = null
+    private lateinit var googleApiClient: GoogleApiClient
+    private val RC_SIGN_IN = 9001 // Request code for Google Sign-In
 
     // Regular expression to check if the password meets the required restrictions
     private val PASSWORD_PATTERN: Regex =
@@ -48,11 +66,23 @@ class LoginFragment : Fragment() {
         val animationView: LottieAnimationView = binding.ani
         animationView.playAnimation()
         fireBaseAuth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
+        storage = FirebaseStorage.getInstance()
+        auth = FirebaseAuth.getInstance()
+        val googleApiClientManager = GoogleApiClientManager.getInstance(requireContext())
+        googleApiClient = googleApiClientManager.getGoogleApiClient()
+
+
+
         val inflater = requireActivity().layoutInflater
 
         val animator2 = ObjectAnimator.ofFloat(binding.button,"alpha", 0.0f, 1.0f)
         animator2.duration = 1000 // Animation duration in milliseconds
         animator2.start()
+        binding.googleSignIn.setOnClickListener {
+            showCustomProgressDialog("Loading...")
+            signInWithGoogle()
+        }
 
         binding.button.setOnClickListener {
             val email = binding.editTextTextEmailAddress2.text.toString()
@@ -91,7 +121,105 @@ class LoginFragment : Fragment() {
             }
         }
     }
+    private fun signInWithGoogle() {
+        val signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient)
+        startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            val result = data?.let { Auth.GoogleSignInApi.getSignInResultFromIntent(it) }
+            if (result!!.isSuccess) {
+                val account = result.signInAccount
+                firebaseAuthWithGoogle(account!!)
+                dialog?.dismiss()
+            } else {
+                dialog?.dismiss()
+                showCustomSeekBarNotification(
+                    R.raw.networkerror,
+                    "Google Sign-In failed, Network problem."
+                )
+            }
+        }
+    }
+    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        fireBaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(requireActivity()) { task ->
+                if (task.isSuccessful) {
+                    showCustomLottieToast(
+                        R.raw.donelottie,
+                        "Login successful..."
+                    )
+                    val currentUser = auth?.currentUser
+                    if (currentUser != null) {
+                        var userName = currentUser.displayName
+                        var profileImageUri : Uri? = currentUser.photoUrl
+                        if (userName.isNullOrEmpty()) {
+                            userName = currentUser.email
+                        }
+                        if (profileImageUri == null) {
+                            val defaultImageResourceId = R.drawable.img
+                            val defaultImageUri =
+                                Uri.parse("android.resource://${requireContext().packageName}/$defaultImageResourceId")
+                            profileImageUri = defaultImageUri
+                        }
+                        val reference =
+                            storage!!.reference.child("Profile").child(currentUser.uid)
+                        profileImageUri?.let {
+                            reference.putFile(it)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        reference.downloadUrl.addOnSuccessListener { uri ->
+                                            val imageUri = uri.toString()
+                                            val uid = currentUser.uid
+                                            val email = currentUser.email
+                                            val user = User(uid, userName, imageUri, email)
+                                            database!!.reference
+                                                .child("users")
+                                                .child(uid)
+                                                .setValue(user)
+                                                .addOnCompleteListener { dbTask ->
+                                                    if (dbTask.isSuccessful) {
+                                                        dialog!!.dismiss()
+                                                        startActivity(
+                                                            Intent(requireActivity(), MainViewPager::class.java)
+                                                        )
+                                                        requireActivity().finish()
+                                                    } else {
+                                                        dialog?.dismiss()
+                                                        val intent = Intent(requireContext(), ProfileActivity::class.java)
+                                                        startActivity(intent)
+                                                        requireActivity().finish()
+                                                    }
+                                                }
+                                        }
+                                    } else {
+                                        val intent = Intent(requireContext(), ProfileActivity::class.java)
+                                        startActivity(intent)
+                                        requireActivity().finish()
+                                        dialog?.dismiss()
+                                    }
+                                }
+                        }
+                    } else {
+                        dialog?.dismiss()
+                        showCustomSeekBarNotification(
+                            R.raw.errorlottie,
+                            "User not found"
+                        )
+                    }
+                } else {
+                    dialog?.dismiss()
+                    showCustomSeekBarNotification(
+                        R.raw.verify,
+                        "Verification failed, connection error"
+                    )
+                }
+            }
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -234,5 +362,22 @@ class LoginFragment : Fragment() {
 
         // Show the custom SeekBar notification
         customSeekBarDialog.show()
+    }
+    private fun showCustomProgressDialog(message: String) {
+        val inflater = LayoutInflater.from(requireContext())
+        val customProgressDialogView = inflater.inflate(R.layout.custom_progress_dialog, null)
+
+        val lottieAnimationView = customProgressDialogView.findViewById<LottieAnimationView>(R.id.lottieAnimationView)
+        val textViewMessage = customProgressDialogView.findViewById<TextView>(R.id.textViewMessage)
+
+        textViewMessage.text = message
+
+        lottieAnimationView.setAnimation(R.raw.loading)
+        lottieAnimationView.playAnimation()
+
+        dialog = Dialog(requireContext())
+        dialog!!.setContentView(customProgressDialogView)
+        dialog!!.setCancelable(false)
+        dialog!!.show()
     }
 }
